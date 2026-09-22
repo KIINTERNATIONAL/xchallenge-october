@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>10월 누적거리·누적고도 레이스 랭크보드 — XBIONIC X CHALLENGE</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f7f4ef;--surface:#fff;--surface2:#f3ece2;--border:#e5dccd;
+    --accent:#0a0a0a;--blue:#C62828;--blue-deep:#8E1B1B;--text:#0a0a0a;--muted:#6b6357;--muted2:#8a8172;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR','Noto Sans CJK KR',sans-serif;-webkit-font-smoothing:antialiased;}
+
+  .hero{background:var(--accent);color:#fff;padding:44px 24px 32px;text-align:center;}
+  .hero-label{font-family:'Noto Sans KR',sans-serif;font-size:11px;letter-spacing:.2em;color:rgba(255,255,255,.45);text-transform:uppercase;margin-bottom:10px;}
+  .hero-month{font-family:'Noto Sans KR',sans-serif;font-weight:800;font-size:clamp(16px,4vw,26px);color:var(--blue);letter-spacing:.15em;margin-bottom:4px;}
+  .hero-title{font-family:'Noto Sans KR',sans-serif;font-weight:800;font-size:clamp(52px,13vw,104px);line-height:.88;letter-spacing:.02em;color:#fff;}
+  .hero-title span{color:var(--blue);}
+  .hero-sub{margin-top:12px;font-size:13px;color:rgba(255,255,255,.45);letter-spacing:.08em;}
+  .period-badge{display:inline-block;margin-top:14px;padding:5px 14px;border:1px solid rgba(198,40,40,.45);border-radius:100px;font-family:'Noto Sans KR',sans-serif;font-size:11px;color:var(--blue);letter-spacing:.1em;}
+
+  .stats-bar{display:grid;grid-template-columns:repeat(3,1fr);background:var(--surface);border-bottom:1px solid var(--border);}
+  .stat-item{padding:18px 12px;border-right:1px solid var(--border);text-align:center;}
+  .stat-item:last-child{border-right:none;}
+  .stat-num{font-family:'Noto Sans KR',sans-serif;font-weight:800;font-size:30px;color:var(--text);line-height:1;}
+  .stat-lbl{font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:.06em;text-transform:uppercase;}
+
+  /* ===== 총 누적고도 밴드 ===== */
+  .mega-elev{background:var(--accent);color:#fff;padding:16px 20px 18px;text-align:center;border-bottom:1px solid var(--border);position:relative;overflow:hidden;}
+  .mega-elev::before,.mega-elev::after{content:"";position:absolute;bottom:0;width:55%;height:70px;background:linear-gradient(180deg,transparent,rgba(198,40,40,.08));clip-path:polygon(0 100%,50% 0,100% 100%);pointer-events:none;}
+  .mega-elev::before{left:-8%;}
+  .mega-elev::after{right:-8%;height:55px;}
+  .mega-elev-label{position:relative;font-family:'Noto Sans KR',sans-serif;font-size:10px;letter-spacing:.2em;color:rgba(255,255,255,.5);text-transform:uppercase;margin-bottom:6px;}
+  .mega-elev-value{position:relative;font-family:'Noto Sans KR',sans-serif;font-weight:800;font-size:clamp(40px,10vw,74px);line-height:.92;color:var(--blue);letter-spacing:.01em;text-shadow:0 0 30px rgba(198,40,40,.3);}
+  .mega-elev-value .unit{font-size:.34em;color:#fff;letter-spacing:.05em;margin-left:6px;}
+  .mega-elev-sub{position:relative;margin-top:8px;font-size:12px;color:rgba(255,255,255,.6);letter-spacing:.03em;min-height:15px;}
+  .mega-elev-sub b{color:var(--blue);font-weight:600;}
+
+  .container{max-width:1100px;margin:0 auto;padding:24px 16px 80px;}
+  .controls{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:8px;}
+  .refresh-btn{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:7px 14px;border-radius:100px;font-size:12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;transition:all .2s;white-space:nowrap;}
+  .refresh-btn:hover{border-color:var(--blue);color:var(--blue-deep);}
+  .refresh-btn.spinning svg{animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .last-updated{font-family:'Noto Sans KR',sans-serif;font-size:11px;color:var(--muted2);}
+
+  .section-label{font-family:'Noto Sans KR',sans-serif;font-weight:800;font-size:20px;letter-spacing:.08em;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+  .badge{font-family:'Noto Sans KR',sans-serif;font-size:10px;padding:3px 10px;border-radius:100px;letter-spacing:.08em;text-transform:uppercase;}
+  .badge-overall{background:var(--accent);color:#fff;}
+  .badge-div{background:var(--accent);color:var(--blue);}
+
+  .board-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:28px;}
+  .board-header{display:grid;grid-template-columns:40px 1fr 100px 56px;padding:9px 14px;font-family:'Noto Sans KR',sans-serif;font-size:11px;font-weight:600;letter-spacing:.02em;color:var(--muted2);border-bottom:1px solid var(--border);background:var(--surface2);}
+  .col-right{text-align:right;}
+
+  .row{display:grid;grid-template-columns:40px 1fr 100px 56px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--border);transition:background .15s;animation:fadeIn .3s ease both;}
+  .row:last-child{border-bottom:none;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:none;}}
+  .row:hover{background:var(--surface2);}
+  .row.top1{background:var(--blue);}
+  .row.top1 .athlete-name,.row.top1 .elev-main,.row.top1 .rank-num{color:#fff;}
+  .row.top1 .athlete-meta,.row.top1 .elev-unit,.row.top1 .acts-col{color:rgba(255,255,255,.7);}
+  .row.top1:hover{background:var(--blue-deep);}
+  .row.top2{background:#fbeceb;}
+  .row.top3{background:#fdf5f4;}
+
+  .row.my-row{background:#0a0a0a !important;color:#fff;}
+  .row.my-row .athlete-name{color:var(--blue);}
+  .row.my-row .athlete-meta,.row.my-row .elev-unit,.row.my-row .acts-col{color:rgba(255,255,255,.45);}
+  .row.my-row .elev-main{color:#fff;}
+  .row.my-row .rank-num{color:var(--blue);}
+  .row.my-row .elev-bar{background:var(--blue) !important;opacity:1 !important;}
+  .row.my-row .elev-bar-wrap{background:rgba(255,255,255,.15);}
+
+  .rank-num{font-family:'Noto Sans KR',sans-serif;font-weight:800;font-size:24px;color:var(--muted2);line-height:1;}
+  .rank-num.r1{color:var(--accent);font-size:26px;}
+  .rank-num.r2{color:#4a5560;font-size:25px;}
+  .rank-num.r3{color:#7a8791;}
+
+  .athlete-info{display:flex;flex-direction:column;gap:1px;overflow:hidden;}
+  .athlete-name{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .athlete-meta{font-size:11px;font-weight:500;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+  .elev-col{text-align:right;}
+  .elev-main{font-family:'Noto Sans KR',sans-serif;font-weight:800;font-size:21px;color:var(--text);line-height:1;}
+  .elev-unit{font-size:11px;font-weight:500;color:var(--muted);}
+  .elev-bar-wrap{height:2px;background:var(--border);margin-top:3px;border-radius:1px;}
+  .elev-bar{height:2px;border-radius:1px;background:var(--blue);opacity:.55;transition:width .8s cubic-bezier(.4,0,.2,1);}
+  .row.top1 .elev-bar{background:#fff;opacity:.5;}
+  .acts-col{text-align:right;font-size:12px;font-weight:500;color:var(--muted);font-family:'Noto Sans KR',sans-serif;}
+
+  .more-row{display:block;width:100%;padding:12px 16px;text-align:center;font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:500;color:var(--muted);border:none;border-top:1px solid var(--border);background:var(--surface2);cursor:pointer;transition:background .15s,color .15s;}
+  .more-row:hover{background:var(--border);color:var(--text);}
+
+  /* 부문 메인 2열 / 성별 4보드 2열 */
+  .division-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  .gender-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+
+  .my-rank-section{margin-top:32px;background:var(--accent);border-radius:12px;padding:28px 24px;}
+  .my-rank-title{font-family:'Noto Sans KR',sans-serif;font-weight:800;font-size:22px;color:var(--blue);letter-spacing:.08em;margin-bottom:6px;}
+  .my-rank-sub{font-size:13px;color:rgba(255,255,255,.4);margin-bottom:18px;}
+  .search-wrap{display:flex;gap:8px;}
+  .search-input{flex:1;padding:11px 16px;border-radius:100px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);color:#fff;font-size:14px;font-family:'Noto Sans KR',sans-serif;outline:none;transition:border .2s;}
+  .search-input::placeholder{color:rgba(255,255,255,.3);}
+  .search-input:focus{border-color:var(--blue);}
+  .search-btn{padding:11px 20px;background:var(--blue);color:#fff;border:none;border-radius:100px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity .2s;}
+  .search-btn:hover{opacity:.85;}
+
+  .my-rank-result{margin-top:16px;display:none;}
+  .my-rank-card{background:rgba(255,255,255,.06);border:1px solid rgba(198,40,40,.35);border-radius:10px;padding:16px 20px;}
+  .card-label{font-family:'Noto Sans KR',sans-serif;font-size:11px;letter-spacing:.04em;font-weight:600;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:12px;}
+  .my-rank-name{font-size:15px;font-weight:600;color:#fff;margin-bottom:14px;}
+  .my-rank-name .div-tag{display:inline-block;margin-left:8px;padding:2px 10px;border:1px solid rgba(198,40,40,.5);border-radius:100px;font-family:'Noto Sans KR',sans-serif;font-size:11px;font-weight:600;color:var(--blue);vertical-align:middle;}
+  .my-rank-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  .my-rank-item{text-align:center;}
+  .my-rank-num{font-family:'Noto Sans KR',sans-serif;font-weight:800;font-size:36px;color:var(--blue);line-height:1;}
+  .my-rank-lbl{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px;}
+  .my-rank-notfound{text-align:center;color:rgba(255,255,255,.4);font-size:13px;padding:12px 0;}
+
+  .submit-cta{margin-top:20px;background:var(--accent);border-radius:12px;padding:30px 24px;text-align:center;}
+  .submit-cta-title{font-family:'Noto Sans KR',sans-serif;font-weight:800;font-size:24px;color:var(--blue);letter-spacing:.08em;margin-bottom:8px;}
+  .submit-cta-sub{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:20px;line-height:1.5;}
+  .submit-cta-btn{display:inline-block;padding:12px 30px;background:var(--blue);color:#fff;border-radius:100px;font-size:14px;font-weight:700;text-decoration:none;transition:opacity .2s;}
+  .submit-cta-btn:hover{opacity:.85;}
+
+  .state-msg{padding:40px 20px;text-align:center;color:var(--muted);font-size:13px;line-height:1.8;}
+
+  /* ===== 스팟라이트 (단일세션 최고고도 / 최다인증, TOP3) ===== */
+  .spotlight-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px;}
+  .spotlight-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;position:relative;overflow:hidden;}
+  .spotlight-head{display:flex;align-items:center;gap:6px;margin-bottom:12px;}
+  .spotlight-icon{font-size:15px;line-height:1;}
+  .spotlight-label{font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:700;color:var(--muted);}
+  .sp-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);}
+  .sp-row:last-child{border-bottom:none;}
+  .sp-rank{font-family:'Noto Sans KR',sans-serif;font-weight:800;font-size:16px;color:var(--muted2);width:16px;flex:none;text-align:center;}
+  .sp-row:nth-child(1) .sp-rank{color:var(--blue-deep);font-size:18px;}
+  .sp-info{flex:1;min-width:0;}
+  .spotlight-name{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .spotlight-name .sp-insta{font-size:11px;font-weight:500;color:var(--muted);}
+  .spotlight-value{flex:none;font-family:'Noto Sans KR',sans-serif;font-weight:800;font-size:17px;color:var(--blue-deep);line-height:1;}
+  .spotlight-value .unit{font-size:.55em;color:var(--muted);margin-left:2px;}
+  .spotlight-empty{font-size:13px;color:var(--muted);padding:8px 0;}
+  @media(max-width:640px){.spotlight-grid{grid-template-columns:1fr;}}
+
+  /* ===== 광고 배너 ===== */
+  .ad-banner{display:block;margin:0 0 28px;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:var(--surface);transition:transform .25s ease,box-shadow .25s ease;animation:fadeIn .4s ease both;}
+  .ad-banner:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.1);}
+  .ad-banner img{display:block;width:100%;height:auto;}
+  .ad-banner-tag{font-family:'Noto Sans KR',sans-serif;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted2);margin-bottom:5px;}
+  .ad-banner-mid{margin-top:4px;}
+
+  /* ===== 응원 댓글 ===== */
+  .comment-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 18px 10px;}
+  .comment-form{display:flex;flex-direction:column;gap:8px;margin-bottom:6px;position:relative;}
+  .comment-row{display:flex;gap:8px;}
+  .comment-name{width:150px;flex:none;}
+  .comment-name,.comment-text{padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'Noto Sans KR',sans-serif;background:#fdfaf6;color:var(--text);outline:none;transition:border .2s;}
+  .comment-text{flex:1;resize:vertical;min-height:44px;line-height:1.4;}
+  .comment-name:focus,.comment-text:focus{border-color:var(--blue);}
+  .comment-submit{align-self:flex-end;padding:9px 24px;background:var(--accent);color:#fff;border:none;border-radius:100px;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .2s;}
+  .comment-submit:hover{opacity:.8;}
+  .comment-submit:disabled{opacity:.4;cursor:default;}
+  .comment-hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0;}
+  .comments-list{margin-top:10px;border-top:1px solid var(--border);max-height:520px;overflow-y:auto;}
+  .comment-item{padding:12px 2px;border-bottom:1px solid var(--border);animation:fadeIn .3s ease both;}
+  .comment-item:last-child{border-bottom:none;}
+  .comment-head{display:flex;align-items:baseline;gap:8px;margin-bottom:3px;}
+  .comment-author{font-size:13px;font-weight:600;color:var(--text);}
+  .comment-time{font-family:'Noto Sans KR',sans-serif;font-size:11px;color:var(--muted2);}
+  .comment-body{font-size:13px;line-height:1.55;color:#333;white-space:pre-wrap;word-break:break-word;}
+  .comment-empty{padding:22px 0;text-align:center;color:var(--muted);font-size:13px;}
+
+  @media(max-width:720px){
+    .hero{padding:32px 16px 24px;}
+    .stat-item{padding:12px 6px;}
+    .stat-num{font-size:22px;}
+    .stat-lbl{font-size:9px;}
+    .board-header,.row{grid-template-columns:36px 1fr 84px;}
+    .acts-col,.acts-hdr{display:none;}
+    .division-grid{grid-template-columns:1fr;gap:0;}
+    .division-grid .board-wrap{margin-bottom:20px;}
+    .gender-grid{grid-template-columns:1fr;gap:0;}
+    .gender-grid .board-wrap{margin-bottom:20px;}
+    .athlete-meta{display:none;}
+    .my-rank-num{font-size:28px;}
+    .controls{flex-direction:column;align-items:flex-start;gap:4px;}
+    .search-wrap{flex-direction:column;}
+    .comment-row{flex-direction:column;}
+    .comment-name{width:100%;}
+  }
+
+  /* ===== 10월: 4칸 스탯 / 이중 메가밴드 / 상품 / 부문 보드 ===== */
+  .stats-bar{grid-template-columns:repeat(4,1fr);}
+  .mega-dual{display:grid;grid-template-columns:1fr 1fr;}
+  .mega-dual .mega-elev{border-bottom:none;}
+  .mega-dual .mega-elev:first-child{border-right:1px solid rgba(255,255,255,.1);}
+  .mega-dual .mega-elev-value{font-size:clamp(34px,7.5vw,64px);}
+  .hero-collab{margin-top:10px;font-family:'Noto Sans KR',sans-serif;font-size:11px;letter-spacing:.18em;color:rgba(255,255,255,.7);}
+  .hero-collab b{color:#fff;font-weight:500;}
+
+  .prize-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:28px;}
+  .prize-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;}
+  .prize-card.main{border-color:rgba(198,40,40,.35);}
+  .prize-kicker{font-family:'Noto Sans KR',sans-serif;font-size:10px;letter-spacing:.14em;color:var(--blue);text-transform:uppercase;margin-bottom:6px;}
+  .prize-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;}
+  .prize-desc{font-size:12px;color:var(--muted);line-height:1.55;}
+
+  .div-count{font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:500;color:var(--muted);letter-spacing:0;margin-left:auto;}
+  .div-rule{font-size:11.5px;color:var(--muted);margin:-4px 0 10px;line-height:1.5;}
+
+  @media(max-width:720px){
+    .stats-bar{grid-template-columns:repeat(2,1fr);}
+    .stat-item:nth-child(2){border-right:none;}
+    .stat-item:nth-child(-n+2){border-bottom:1px solid var(--border);}
+    .mega-dual{grid-template-columns:1fr;}
+    .mega-dual .mega-elev:first-child{border-right:none;border-bottom:1px solid rgba(255,255,255,.1);}
+    .prize-grid{grid-template-columns:1fr;gap:10px;}
+  }
+
+  /* ===== Noto Sans 통일에 맞춘 크기 보정 ===== */
+  .hero-title{font-weight:900;letter-spacing:-.02em;line-height:.95;font-size:clamp(44px,11vw,92px);}
+  .hero-month{font-size:clamp(13px,3vw,18px);letter-spacing:.12em;font-weight:700;}
+  .hero-label,.period-badge,.hero-collab,.mega-elev-label,.prize-kicker,.badge,.ad-banner-tag{letter-spacing:.08em;}
+  .stat-num{font-size:26px;letter-spacing:-.01em;}
+  .mega-elev-value,.mega-dual .mega-elev-value{font-weight:900;letter-spacing:-.02em;font-size:clamp(32px,6.5vw,56px);}
+  .section-label{font-size:18px;letter-spacing:0;}
+  .rank-num{font-size:20px;} .rank-num.r1{font-size:22px;} .rank-num.r2{font-size:21px;}
+  .elev-main{font-size:17px;font-weight:800;}
+  .sp-rank{font-size:14px;} .spotlight-value{font-size:15px;}
+  .my-rank-title,.submit-cta-title{font-size:20px;letter-spacing:0;}
+  .my-rank-num{font-size:30px;}
+  @media(max-width:720px){.stat-num{font-size:20px;}.my-rank-num{font-size:24px;}}
+
+  /* ===== 10월 라이트 톤: 블랙 배경 → 단풍 크림 ===== */
+  :root{--warm:#FCEDE6;--warm2:#FFF7F3;--warm-line:#F2D2C5;--ink:#2A1512;--ink-mute:rgba(62,28,22,.58);}
+  .hero{background:linear-gradient(180deg,#FDF1EB 0%,#F9E1D6 100%);color:var(--ink);border-bottom:1px solid var(--warm-line);}
+  .hero-label{color:var(--ink-mute);}
+  .hero-title{color:var(--ink);}
+  .hero-sub{color:var(--ink-mute);}
+  .hero-collab{color:var(--ink-mute);} .hero-collab b{color:var(--ink);}
+  .period-badge{background:#fff;border-color:rgba(198,40,40,.35);}
+
+  .mega-elev{background:var(--warm2);color:var(--ink);border-bottom:1px solid var(--border);}
+  .mega-dual .mega-elev:first-child{border-right-color:var(--border);}
+  .mega-elev-label{color:var(--ink-mute);}
+  .mega-elev-value{text-shadow:none;}
+  .mega-elev-value .unit{color:var(--ink);}
+  .mega-elev-sub{color:var(--ink-mute);}
+
+  .my-rank-section,.submit-cta{background:var(--warm);border:1px solid var(--warm-line);}
+  .my-rank-sub,.submit-cta-sub{color:var(--ink-mute);}
+  .search-input{background:#fff;border-color:var(--warm-line);color:var(--ink);}
+  .search-input::placeholder{color:rgba(62,28,22,.35);}
+  .my-rank-card{background:#fff;border-color:rgba(198,40,40,.3);}
+  .card-label,.my-rank-lbl,.my-rank-notfound{color:var(--ink-mute);}
+  .my-rank-name{color:var(--ink);}
+  .my-rank-name span:not(.div-tag){color:var(--ink-mute) !important;}
+
+  .row.my-row{background:#FFE3D9 !important;color:var(--ink);}
+  .row.my-row .athlete-name{color:var(--blue-deep);}
+  .row.my-row .athlete-meta,.row.my-row .elev-unit,.row.my-row .acts-col{color:var(--ink-mute);}
+  .row.my-row .elev-main{color:var(--ink);}
+  .row.my-row .elev-bar-wrap{background:rgba(198,40,40,.15);}
+
+  .badge-overall,.badge-div{background:var(--blue);color:#fff;}
+  .comment-submit{background:var(--blue);}
+  @media(max-width:720px){.mega-dual .mega-elev:first-child{border-bottom-color:var(--border);}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-label">XBIONIC KOREA · 2026</div>
+  <div class="hero-month">OCTOBER DISTANCE &amp; ELEVATION RACE</div>
+  <div class="hero-title">X<span>CHALLENGE</span></div>
+  <div class="hero-sub">누적거리 · 누적고도 레이스 · 로드와 트레일 모두 참가 가능</div>
+  <div class="hero-collab"><b>X-BIONIC</b> × <b>PATHFLOW</b></div>
+  <div class="period-badge" id="periodBadge">—</div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat-item"><div class="stat-num" id="statParticipants">—</div><div class="stat-lbl">참가자 (두 부문 합계)</div></div>
+  <div class="stat-item"><div class="stat-num" id="statTopDist">—</div><div class="stat-lbl">🏃 거리 1위 (km)</div></div>
+  <div class="stat-item"><div class="stat-num" id="statTopElev">—</div><div class="stat-lbl">⛰ 고도 1위 (m)</div></div>
+  <div class="stat-item"><div class="stat-num" id="statDaysLeft">—</div><div class="stat-lbl">남은 일수</div></div>
+</div>
+
+<div class="mega-dual">
+  <div class="mega-elev">
+    <div class="mega-elev-label">TOTAL DISTANCE · 누적거리 부문 합계</div>
+    <div class="mega-elev-value"><span id="statTotalDist">0</span><span class="unit">km</span></div>
+    <div class="mega-elev-sub" id="statTotalDistSub"></div>
+  </div>
+  <div class="mega-elev">
+    <div class="mega-elev-label">TOTAL ELEVATION · 누적고도 부문 합계</div>
+    <div class="mega-elev-value"><span id="statTotalElev">0</span><span class="unit">m</span></div>
+    <div class="mega-elev-sub" id="statTotalElevSub"></div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="controls">
+    <div class="last-updated" id="lastUpdated">마지막 업데이트: —</div>
+    <button class="refresh-btn" id="refreshBtn" onclick="loadData()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+      </svg>새로고침
+    </button>
+  </div>
+
+  <!-- ===== 상품 안내 ===== -->
+  <div class="prize-grid">
+    <div class="prize-card main">
+      <div class="prize-kicker">Distance · 1st</div>
+      <div class="prize-title">누적거리 부문 1위</div>
+      <div class="prize-desc">한 달 동안 가장 멀리 달린 러너</div>
+    </div>
+    <div class="prize-card main">
+      <div class="prize-kicker">Elevation · 1st</div>
+      <div class="prize-title">누적고도 부문 1위</div>
+      <div class="prize-desc">한 달 동안 가장 높이 오른 러너</div>
+    </div>
+    <div class="prize-card">
+      <div class="prize-kicker">Lucky Draw</div>
+      <div class="prize-title">럭키드로우</div>
+      <div class="prize-desc">두 부문 기록 인증 참가자 전원 대상 무작위 추첨</div>
+    </div>
+  </div>
+
+  <!-- ===== 스팟라이트: 단일 세션 최장거리 / 최고고도 (TOP3) ===== -->
+  <div class="spotlight-grid">
+    <div class="spotlight-card">
+      <div class="spotlight-head"><span class="spotlight-icon">🏃</span><span class="spotlight-label">단일 세션 최장거리 · 누적거리 부문</span></div>
+      <div id="spotlightDist"><div class="spotlight-empty">—</div></div>
+    </div>
+    <div class="spotlight-card">
+      <div class="spotlight-head"><span class="spotlight-icon">⚡</span><span class="spotlight-label">단일 세션 최고 누적고도 · 누적고도 부문</span></div>
+      <div id="spotlightElev"><div class="spotlight-empty">—</div></div>
+    </div>
+  </div>
+
+  <!-- ===== 부문 보드: 왼쪽 누적거리 / 오른쪽 누적고도 ===== -->
+  <div class="division-grid">
+    <div>
+      <div class="section-label">누적거리 <span class="badge badge-div">TOP 10</span><span class="div-count" id="countDist"></span></div>
+      <div class="div-rule">실외 러닝 · 로드러닝 · 평균 페이스 8분/km 미만 · 남녀 통합</div>
+      <div class="board-wrap">
+        <div class="board-header"><div>#</div><div>참가자</div><div class="col-right">누적거리</div><div class="col-right acts-hdr">인증</div></div>
+        <div id="bodyDist"><div class="state-msg">데이터를 불러오는 중...</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="section-label">누적고도 <span class="badge badge-div">TOP 10</span><span class="div-count" id="countElev"></span></div>
+      <div class="div-rule">트레일러닝 · 하이킹 · 트레킹 · 남녀 통합</div>
+      <div class="board-wrap">
+        <div class="board-header"><div>#</div><div>참가자</div><div class="col-right">누적고도</div><div class="col-right acts-hdr">인증</div></div>
+        <div id="bodyElev"><div class="state-msg">데이터를 불러오는 중...</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== AD SLOT 1 : 기존 배너 블록(base64 img 포함 a.ad-banner)을 이 주석 위치에 붙여넣기 ===== -->
+
+  <!-- ===== 내 순위 확인 ===== -->
+  <div class="my-rank-section">
+    <div class="my-rank-title">내 순위 확인</div>
+    <div class="my-rank-sub">이름 또는 인스타 아이디를 입력하면 내 부문 순위를 확인할 수 있어요</div>
+    <div class="search-wrap">
+      <input class="search-input" id="searchInput" type="text" placeholder="이름 또는 @인스타아이디 입력" onkeydown="if(event.key==='Enter')searchMyRank()">
+      <button class="search-btn" onclick="searchMyRank()">확인</button>
+    </div>
+    <div class="my-rank-result" id="myRankResult"></div>
+  </div>
+
+  <!-- ===== 기록 제출 ===== -->
+  <div class="submit-cta">
+    <div class="submit-cta-title">기록 제출하기</div>
+    <div class="submit-cta-sub">워치 앱 또는 스트라바 기록 상세 화면을 제출하면 신청한 부문 순위에 반영됩니다<br>활동일로부터 3일 이내 제출한 기록만 인정</div>
+    <a class="submit-cta-btn" id="submitCtaBtn" href="#" target="_blank" rel="noopener">기록 제출하기 →</a>
+  </div>
+
+  <!-- ===== AD SLOT 2 : 기존 배너 블록을 이 주석 위치에 붙여넣기 ===== -->
+
+  <!-- ===== 응원 댓글 ===== -->
+  <div id="commentSection" style="display:none;">
+    <div class="section-label" style="margin-top:32px;">응원 댓글 <span class="badge badge-overall" id="commentCount">0</span></div>
+    <div class="comment-wrap">
+      <div class="comment-form">
+        <div class="comment-row">
+          <input class="comment-name" id="cName" type="text" maxlength="20" placeholder="닉네임">
+          <textarea class="comment-text" id="cText" maxlength="300" placeholder="선수들에게 응원의 한마디를 남겨주세요 (최대 300자)" onkeydown="if(event.key==='Enter'&&(event.metaKey||event.ctrlKey))submitComment()"></textarea>
+        </div>
+        <input class="comment-hp" id="cHp" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <button class="comment-submit" id="cSubmit" onclick="submitComment()">등록</button>
+      </div>
+      <div class="comments-list" id="commentsList"><div class="comment-empty">댓글을 불러오는 중...</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   10월 CONFIG — ★ 표시 항목은 10월 시트/폼 생성 후 교체
+   ===================================================================== */
+const SHEET_ID        = 'PASTE_10월_기록제출_시트_ID';       // ★ 기록제출 응답 시트
+const SHEET_GID       = '0';                                  // ★ 기록제출 응답 탭
+const FORM_URL        = 'PASTE_10월_기록제출_폼_URL';         // ★
+const ROSTER_SHEET_ID = 'PASTE_10월_참가신청_시트_ID';        // ★ 참가신청 응답 시트 (부문 조인용)
+const ROSTER_GID      = '0';                                  // ★ 참가신청 응답 탭
+const CHALLENGE_START = '2026-10-01';                         // ★ 기간 확정 후 교체
+const CHALLENGE_END   = '2026-10-31';                         // ★
+const TOP_DIV         = 10;   // 부문 보드 기본 표시 인원
+
+const SHEET_CSV_URL  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${SHEET_GID}`;
+const ROSTER_CSV_URL = `https://docs.google.com/spreadsheets/d/${ROSTER_SHEET_ID}/gviz/tq?tqx=out:csv&gid=${ROSTER_GID}`;
+
+/* ── 열은 순서가 아니라 "헤더 이름"으로 찾는다 (폼 문항 순서가 바뀌어도 안전) ──
+   기록제출 폼 문항 제목에 아래 키워드가 들어가 있으면 자동 인식 */
+const H_NAME  = ['이름'];
+const H_INSTA = ['인스타'];
+const H_DATE  = ['활동날짜','활동 날짜','날짜'];
+const H_DIST  = ['누적거리','거리'];
+const H_ELEV  = ['누적고도','고도'];
+const H_DIV   = ['참가부문','부문'];   // 참가신청서의 부문 문항 (기록제출 폼에 있으면 그것도 사용)
+
+/* 부문 표기 정규화: '누적거리 챌린지' → dist / '누적고도 챌린지' → elev */
+function normDiv(s){ s=(s||'').replace(/\s/g,''); if(s.includes('거리'))return 'dist'; if(s.includes('고도'))return 'elev'; return ''; }
+function normInsta(s){ return (s||'').toLowerCase().replace(/^@/,'').replace(/\s/g,''); }
+function num(s){ const n=parseFloat(String(s||'').replace(/,/g,'').replace(/[^\d.\-]/g,'')); return isNaN(n)?0:n; }
+
+/* 따옴표/빈 칸까지 정확히 처리하는 CSV 파서 */
+function csvRows(text){
+  const rows=[]; let row=[], cell='', q=false;
+  for(let i=0;i<text.length;i++){
+    const ch=text[i];
+    if(q){
+      if(ch==='"'){ if(text[i+1]==='"'){cell+='"';i++;} else q=false; }
+      else cell+=ch;
+    }else{
+      if(ch==='"') q=true;
+      else if(ch===','){ row.push(cell); cell=''; }
+      else if(ch==='\n'){ row.push(cell); rows.push(row); row=[]; cell=''; }
+      else if(ch!=='\r') cell+=ch;
+    }
+  }
+  if(cell!==''||row.length){ row.push(cell); rows.push(row); }
+  return rows.map(r=>r.map(c=>c.trim()));
+}
+function findCol(header,keys,exclude){
+  for(const k of keys){
+    const i=header.findIndex((h,idx)=>h.replace(/\s/g,'').includes(k.replace(/\s/g,'')) && !(exclude||[]).includes(idx));
+    if(i>=0) return i;
+  }
+  return -1;
+}
+
+/* ===== 참가신청서: 인스타 → 부문 매핑 ===== */
+let divMap = {};   // insta -> 'dist' | 'elev'
+let rosterCount = {dist:0, elev:0};
+async function loadRoster(){
+  try{
+    const res=await fetch(ROSTER_CSV_URL+'&t='+Date.now());
+    if(!res.ok) throw 0;
+    const rows=csvRows(await res.text()); if(rows.length<2) return;
+    const h=rows[0], ci=findCol(h,H_INSTA), cd=findCol(h,H_DIV);
+    if(ci<0||cd<0) return;
+    const m={}, cnt={dist:0,elev:0};
+    rows.slice(1).forEach(c=>{
+      const insta=normInsta(c[ci]), d=normDiv(c[cd]);
+      if(insta&&d){ if(!m[insta]) cnt[d]++; m[insta]=d; }
+    });
+    divMap=m; rosterCount=cnt;
+  }catch(e){ /* 로스터 실패 시 기록제출 폼의 부문 문항으로 대체 */ }
+}
+
+/* ===== 응원 댓글 설정 — ★ 댓글 폼 생성 후 교체 ===== */
+const COMMENT_SHEET_ID   = SHEET_ID;
+const COMMENT_SHEET_GID  = 'PASTE_댓글_응답탭_GID';       // ★
+const COMMENT_FORM_ID    = 'PASTE_댓글_폼_ID';            // ★
+const COMMENT_ENTRY_NAME = 'entry.0000000001';            // ★ 닉네임 entry
+const COMMENT_ENTRY_TEXT = 'entry.0000000002';            // ★ 댓글 entry
+const CCOL_TIME=0, CCOL_NAME=1, CCOL_TEXT=2;
+const COMMENT_READY = COMMENT_FORM_ID.indexOf('PASTE')<0 && COMMENT_ENTRY_NAME.indexOf('0000000001')<0;
+const COMMENT_CSV_URL = `https://docs.google.com/spreadsheets/d/${COMMENT_SHEET_ID}/gviz/tq?tqx=out:csv&gid=${COMMENT_SHEET_GID}`;
+
+const INVALID_KEYWORDS = ['스크린샷','누적고도','누적거리','찍어주세요','업로드','제출','trail','pledge','http','www','함께','나오게','러닝','일시','파일','성별','부문'];
+function isValidName(n){if(!n||n.length<2||n.length>30)return false;return!INVALID_KEYWORDS.some(k=>n.toLowerCase().includes(k.toLowerCase()));}
+function getDaysLeft(){
+  const end=new Date(CHALLENGE_END+'T23:59:59+09:00');
+  return Math.max(0,Math.ceil((end-new Date())/86400000));
+}
+function fmt(n,d){d=d||0;return Number(n).toLocaleString('ko-KR',{minimumFractionDigits:d,maximumFractionDigits:d});}
+function periodText(){
+  const s=CHALLENGE_START.replace(/-/g,'.'), e=CHALLENGE_END.slice(5).replace(/-/g,'.');
+  return `${s} — ${e}`;
+}
+
+/* 부문별 설정: 어떤 값을 순위에 쓰는지 */
+const DIV = {
+  dist:{key:'dist', unit:'km', dec:1, body:'bodyDist', count:'countDist', label:'누적거리'},
+  elev:{key:'elev', unit:'m',  dec:0, body:'bodyElev', count:'countElev', label:'누적고도'}
+};
+
+let allData=[];          // 제출 원본 (부문 확정된 것만)
+let unmatched=0;         // 부문을 못 찾은 제출 수 (콘솔 확인용)
+let expanded={dist:false,elev:false};
+let lastMyName=null;
+
+function aggregate(divKey){
+  const map={};
+  allData.filter(r=>r.div===divKey).forEach(r=>{
+    const k=r.name.trim();
+    if(!map[k]) map[k]={name:k,insta:'',val:0,acts:0};
+    map[k].val+=r[divKey];
+    map[k].acts+=1;
+    if(r.insta) map[k].insta=r.insta;   // 표기가 제출마다 달라도 이름 기준 합산, 표시는 최신 제출값
+  });
+  return Object.values(map).filter(r=>r.val>0).sort((a,b)=>b.val-a.val);
+}
+
+function buildRows(sorted,cfg,myName){
+  if(!sorted.length) return '<div class="state-msg">아직 기록 없음</div>';
+  const isExp=expanded[cfg.key], limit=TOP_DIV;
+  const top=sorted.slice(0,isExp?sorted.length:limit);
+  const maxV=sorted[0].val||1;
+  const rc=['','top1','top2','top3'], rn=['','r1','r2','r3'];
+  let html=top.map((r,i)=>{
+    const rank=i+1, pct=Math.round((r.val/maxV)*100);
+    const isMe=myName&&r.name.toLowerCase()===myName.toLowerCase();
+    return `<div class="row ${isMe?'my-row':(rc[rank]||'')}" style="animation-delay:${Math.min(i,20)*25}ms">
+      <div class="rank-num ${isMe?'':(rn[rank]||'')}">${rank}</div>
+      <div class="athlete-info"><div class="athlete-name">${r.name}${r.insta?` <span style="color:var(--muted);font-weight:500;">(@${r.insta})</span>`:''}</div></div>
+      <div class="elev-col"><div><span class="elev-main">${fmt(r.val,cfg.dec)}</span><span class="elev-unit"> ${cfg.unit}</span></div><div class="elev-bar-wrap"><div class="elev-bar" style="width:${pct}%"></div></div></div>
+      <div class="acts-col">${r.acts}회</div>
+    </div>`;
+  }).join('');
+  if(sorted.length>limit){
+    html+=isExp
+      ? `<button type="button" class="more-row" onclick="toggleExpand('${cfg.key}')">접기 ▲</button>`
+      : `<button type="button" class="more-row" onclick="toggleExpand('${cfg.key}')">+ ${sorted.length-limit}명 더 보기 ▼</button>`;
+  }
+  return html;
+}
+function toggleExpand(key){ expanded[key]=!expanded[key]; renderAll(lastMyName); }
+
+/* 합계 숫자 카운트업 */
+const animState={};
+function animateNum(id,target,dec){
+  const el=document.getElementById(id); if(!el) return;
+  const st=animState[id]||(animState[id]={last:0,raf:null});
+  const start=st.last, delta=target-start, dur=1100, t0=performance.now();
+  if(st.raf) cancelAnimationFrame(st.raf);
+  function step(now){
+    const p=Math.min(1,(now-t0)/dur), e=1-Math.pow(1-p,3);
+    el.textContent=fmt(start+delta*e,dec);
+    if(p<1) st.raf=requestAnimationFrame(step); else { st.last=target; el.textContent=fmt(target,dec); }
+  }
+  st.raf=requestAnimationFrame(step);
+}
+function updateSubs(totalDist,totalElev,cDist,cElev){
+  const ds=document.getElementById('statTotalDistSub'), es=document.getElementById('statTotalElevSub');
+  if(totalDist>=400) ds.innerHTML=`🛣 서울–부산(약 400km)을 <b>${(totalDist/400).toFixed(1)}번</b> 달린 거리`;
+  else if(totalDist>0) ds.innerHTML=`🛣 <b>${cDist}명</b>이 함께 <b>${fmt(totalDist,1)}km</b>를 달렸어요`;
+  else ds.textContent='';
+  if(totalElev>=8848) es.innerHTML=`🏔 에베레스트(8,848m)를 <b>${(totalElev/8848).toFixed(1)}번</b> 오른 높이`;
+  else if(totalElev>0) es.innerHTML=`🏔 <b>${cElev}명</b>이 함께 <b>${fmt(totalElev)}m</b>를 쌓았어요`;
+  else es.textContent='';
+}
+
+function spotlightHTML(divKey,cfg){
+  const best={};
+  allData.filter(r=>r.div===divKey&&r[divKey]>0).forEach(r=>{
+    const k=r.name.trim();
+    if(!best[k]||r[divKey]>best[k].v) best[k]={name:k,insta:r.insta||'',v:r[divKey]};
+  });
+  const top3=Object.values(best).sort((a,b)=>b.v-a.v).slice(0,3);
+  if(!top3.length) return '<div class="spotlight-empty">아직 기록 없음</div>';
+  return top3.map((r,i)=>`<div class="sp-row">
+    <div class="sp-rank">${i+1}</div>
+    <div class="sp-info"><div class="spotlight-name">${r.name}${r.insta?` <span class="sp-insta">(@${r.insta})</span>`:''}</div></div>
+    <div class="spotlight-value">${fmt(r.v,cfg.dec)}<span class="unit">${cfg.unit}</span></div>
+  </div>`).join('');
+}
+
+function renderAll(myName){
+  lastMyName=myName;
+  const dist=aggregate('dist'), elev=aggregate('elev');
+  const totalDist=dist.reduce((s,r)=>s+r.val,0), totalElev=elev.reduce((s,r)=>s+r.val,0);
+  const participants=dist.length+elev.length;
+
+  document.getElementById('statParticipants').textContent=participants||(rosterCount.dist+rosterCount.elev)||0;
+  document.getElementById('statTopDist').textContent=dist[0]?fmt(dist[0].val,1):'—';
+  document.getElementById('statTopElev').textContent=elev[0]?fmt(elev[0].val):'—';
+  document.getElementById('statDaysLeft').textContent=getDaysLeft();
+  animateNum('statTotalDist',totalDist,1);
+  animateNum('statTotalElev',totalElev,0);
+  updateSubs(totalDist,totalElev,dist.length,elev.length);
+
+  document.getElementById('bodyDist').innerHTML=buildRows(dist,DIV.dist,myName);
+  document.getElementById('bodyElev').innerHTML=buildRows(elev,DIV.elev,myName);
+  document.getElementById('countDist').textContent=dist.length?`${dist.length}명 기록`:'';
+  document.getElementById('countElev').textContent=elev.length?`${elev.length}명 기록`:'';
+  document.getElementById('spotlightDist').innerHTML=spotlightHTML('dist',DIV.dist);
+  document.getElementById('spotlightElev').innerHTML=spotlightHTML('elev',DIV.elev);
+}
+
+function searchMyRank(){
+  const query=document.getElementById('searchInput').value.trim().replace(/^@/,'').toLowerCase();
+  const result=document.getElementById('myRankResult');
+  result.style.display='block';
+  if(!query){ result.innerHTML='<div class="my-rank-notfound">이름 또는 인스타 아이디를 입력해주세요</div>'; return; }
+  let found=null, cfg=null, list=null;
+  for(const k of ['dist','elev']){
+    const l=aggregate(k);
+    const f=l.find(r=>r.name.toLowerCase().includes(query)||(r.insta&&r.insta.toLowerCase().includes(query)));
+    if(f){ found=f; cfg=DIV[k]; list=l; break; }
+  }
+  if(!found){
+    result.innerHTML=`<div class="my-rank-card"><div class="my-rank-notfound">"${query}" 와 일치하는 참가자를 찾을 수 없습니다</div></div>`;
+    renderAll(null); return;
+  }
+  const rank=list.findIndex(r=>r.name===found.name)+1;
+  result.innerHTML=`<div class="my-rank-card">
+    <div class="card-label">검색 결과</div>
+    <div class="my-rank-name">${found.name}${found.insta?` <span style="color:rgba(255,255,255,.4);font-weight:400;">(@${found.insta})</span>`:''}<span class="div-tag">${cfg.label} 부문</span></div>
+    <div class="my-rank-grid">
+      <div class="my-rank-item"><div class="my-rank-num">${rank}</div><div class="my-rank-lbl">${cfg.label} 순위 / ${list.length}명</div></div>
+      <div class="my-rank-item"><div class="my-rank-num">${fmt(found.val,cfg.dec)}<span style="font-size:14px;color:rgba(198,40,40,.8)">${cfg.unit}</span></div><div class="my-rank-lbl">${cfg.label}</div></div>
+      <div class="my-rank-item"><div class="my-rank-num">${found.acts}</div><div class="my-rank-lbl">인증 횟수</div></div>
+    </div>
+  </div>`;
+  renderAll(found.name);
+  document.getElementById(cfg.body).scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function parseSubmissions(text){
+  const rows=csvRows(text); if(rows.length<2) return [];
+  const h=rows[0];
+  const cN=findCol(h,H_NAME), cI=findCol(h,H_INSTA), cDi=findCol(h,H_DIST);
+  const cE=findCol(h,H_ELEV,[cDi]), cDv=findCol(h,H_DIV);
+  let miss=0;
+  const out=rows.slice(1).map(c=>{
+    const insta=cI>=0?(c[cI]||'').replace(/^@/,'').trim():'';
+    let div=divMap[normInsta(insta)]||'';
+    if(!div&&cDv>=0) div=normDiv(c[cDv]);
+    const r={name:cN>=0?(c[cN]||''):'', insta, div,
+             dist:cDi>=0?num(c[cDi]):0, elev:cE>=0?num(c[cE]):0};
+    if(isValidName(r.name)&&!div) miss++;
+    return r;
+  }).filter(r=>isValidName(r.name)&&r.div&&(r.dist>0||r.elev>0));
+  unmatched=miss;
+  if(miss) console.warn(`[X-CHALLENGE] 부문을 찾지 못한 제출 ${miss}건 — 참가신청서 인스타ID와 기록제출 인스타ID 표기를 확인하세요`);
+  return out;
+}
+
+async function loadData(){
+  const btn=document.getElementById('refreshBtn');
+  btn.classList.add('spinning');
+  try{
+    const res=await fetch(SHEET_CSV_URL+'&t='+Date.now());
+    if(!res.ok) throw 0;
+    const parsed=parseSubmissions(await res.text());
+    if(parsed.length) allData=parsed;   // 빈/이상 응답이면 기존 데이터 유지
+    renderAll(lastMyName);
+  }catch(e){
+    if(!allData.length){
+      ['bodyDist','bodyElev'].forEach(id=>{document.getElementById(id).innerHTML='<div class="state-msg">데이터를 불러올 수 없습니다.<br>잠시 후 다시 시도해주세요.</div>';});
+    }
+  }
+  document.getElementById('lastUpdated').textContent='업데이트: '+new Date().toLocaleTimeString('ko-KR');
+  btn.classList.remove('spinning');
+}
+
+document.getElementById('periodBadge').textContent=periodText();
+document.getElementById('statDaysLeft').textContent=getDaysLeft();
+document.getElementById('submitCtaBtn').href=FORM_URL;
+(async function initialLoad(){
+  await loadRoster();   // 부문 매핑 먼저 확보
+  for(let i=0;i<3;i++){
+    await loadData();
+    if(allData.length) return;
+    await new Promise(r=>setTimeout(r,1500));
+  }
+})();
+setInterval(async()=>{await loadRoster();await loadData();},5*60*1000);
+
+/* ===== 응원 댓글 동작 ===== */
+let commentsData=[], lastPost=0;
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function fmtTime(raw){
+  const d=new Date(raw); if(isNaN(d))return raw||'';
+  const s=(Date.now()-d.getTime())/1000;
+  if(s<60)return '방금 전';
+  if(s<3600)return Math.floor(s/60)+'분 전';
+  if(s<86400)return Math.floor(s/3600)+'시간 전';
+  return Math.floor(s/86400)+'일 전';
+}
+function renderComments(){
+  const list=document.getElementById('commentsList');
+  document.getElementById('commentCount').textContent=commentsData.length;
+  if(!commentsData.length){list.innerHTML='<div class="comment-empty">아직 댓글이 없어요. 첫 응원을 남겨주세요!</div>';return;}
+  list.innerHTML=commentsData.map(c=>`<div class="comment-item">
+    <div class="comment-head"><span class="comment-author">${escapeHtml(c.name)}</span><span class="comment-time">${fmtTime(c.time)}</span></div>
+    <div class="comment-body">${escapeHtml(c.text)}</div>
+  </div>`).join('');
+}
+function parseComments(csv){
+  const rows=csvRows(csv); if(rows.length<2)return[];
+  return rows.slice(1).map(c=>({time:c[CCOL_TIME]||'',name:c[CCOL_NAME]||'익명',text:c[CCOL_TEXT]||''})).filter(c=>c.text).reverse();
+}
+async function loadComments(){
+  if(!COMMENT_READY)return;
+  try{
+    const res=await fetch(COMMENT_CSV_URL+'&t='+Date.now());
+    if(!res.ok)throw 0;
+    commentsData=parseComments(await res.text());
+    renderComments();
+  }catch(e){}
+}
+async function submitComment(){
+  if(!COMMENT_READY){alert('댓글 기능이 아직 설정되지 않았습니다.');return;}
+  if(document.getElementById('cHp').value)return; // 봇 차단(허니팟)
+  const name=document.getElementById('cName').value.trim();
+  const text=document.getElementById('cText').value.trim();
+  if(!name){alert('닉네임을 입력해주세요.');return;}
+  if(text.length<2){alert('응원 한마디를 입력해주세요.');return;}
+  const now=Date.now();
+  if(now-lastPost<10000){alert('잠시 후 다시 등록해주세요.');return;}
+  lastPost=now;
+  const btn=document.getElementById('cSubmit'); btn.disabled=true; btn.textContent='등록 중...';
+  try{
+    const fd=new FormData();
+    fd.append(COMMENT_ENTRY_NAME,name);
+    fd.append(COMMENT_ENTRY_TEXT,text);
+    await fetch(`https://docs.google.com/forms/d/e/${COMMENT_FORM_ID}/formResponse`,{method:'POST',mode:'no-cors',body:fd});
+    commentsData.unshift({time:new Date().toISOString(),name:name,text:text});
+    renderComments();
+    document.getElementById('cText').value='';
+    setTimeout(loadComments,4000);
+  }catch(e){alert('등록에 실패했어요. 잠시 후 다시 시도해주세요.');}
+  btn.disabled=false; btn.textContent='등록';
+}
+if(COMMENT_READY){
+  document.getElementById('commentSection').style.display='block';
+  loadComments();
+  setInterval(loadComments,30000);
+}
+
+/* ===== Cafe24 iframe 높이 자동맞춤 (무한증가 방지형) ===== */
+(function(){
+  var last=0;
+  function postHeight(){
+    var h=Math.ceil(document.documentElement.getBoundingClientRect().height);
+    if(Math.abs(h-last)<=2) return;
+    last=h;
+    try{parent.postMessage({xch:'height',h:h},'*');}catch(e){}
+  }
+  window.addEventListener('load',postHeight);
+  window.addEventListener('resize',postHeight);
+  if(window.ResizeObserver){new ResizeObserver(postHeight).observe(document.documentElement);}
+  setInterval(postHeight,2000);
+})();
+</script>
+</body>
+</html>

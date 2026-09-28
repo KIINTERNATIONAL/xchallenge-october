@@ -151,6 +151,7 @@
   .ad-banner img{display:block;width:100%;height:auto;}
   .ad-banner-tag{font-family:'Noto Sans KR',sans-serif;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted2);margin-bottom:5px;}
   .ad-banner-mid{margin-top:4px;}
+  #commentSection{margin:32px 0 28px;}
 
   /* ===== 응원 댓글 ===== */
   .comment-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 18px 10px;}
@@ -207,6 +208,17 @@
   .prize-kicker{font-family:'Noto Sans KR',sans-serif;font-size:10px;letter-spacing:.14em;color:var(--blue);text-transform:uppercase;margin-bottom:6px;}
   .prize-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;}
   .prize-desc{font-size:12px;color:var(--muted);line-height:1.55;}
+
+  .ticket-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin:-14px 0 28px;}
+  .ticket-head{display:flex;flex-direction:column;margin-bottom:10px;}
+  .ticket-head .prize-kicker{margin-bottom:4px;}
+  .ticket-title{font-size:15px;font-weight:700;color:var(--text);}
+  .ticket-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:8px 28px;}
+  .ticket-sub{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px;}
+  .ticket-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:6px 0;border-bottom:1px dashed var(--border);font-size:12.5px;color:var(--text);}
+  .ticket-row:last-child{border-bottom:none;}
+  .ticket-row b{color:var(--blue);font-weight:800;font-size:13px;white-space:nowrap;}
+  @media(max-width:720px){.ticket-grid{grid-template-columns:1fr;gap:12px;}.ticket-box{margin-top:-4px;}}
 
   .div-count{font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:500;color:var(--muted);letter-spacing:0;margin-left:auto;}
   .div-rule{font-size:11.5px;color:var(--muted);margin:-4px 0 10px;line-height:1.5;}
@@ -317,19 +329,52 @@
     <div class="prize-card main">
       <div class="prize-kicker">Distance · 1st</div>
       <div class="prize-title">누적거리 부문 1위</div>
-      <div class="prize-desc">한 달 동안 가장 멀리 달린 러너</div>
+      <div class="prize-desc">SHYU SOCKS · Participation 싱글렛 · 러닝팬츠</div>
     </div>
     <div class="prize-card main">
       <div class="prize-kicker">Elevation · 1st</div>
       <div class="prize-title">누적고도 부문 1위</div>
-      <div class="prize-desc">한 달 동안 가장 높이 오른 러너</div>
+      <div class="prize-desc">X-BIONIC 테라스킨 X02 트레일러닝화</div>
     </div>
     <div class="prize-card">
       <div class="prize-kicker">Lucky Draw</div>
-      <div class="prize-title">럭키드로우</div>
-      <div class="prize-desc">두 부문 기록 인증 참가자 전원 대상 무작위 추첨</div>
+      <div class="prize-title">룰렛 럭키드로우</div>
+      <div class="prize-desc">순위·성과별로 응모권을 받아, 모은 응모권만큼 룰렛을 돌려요</div>
     </div>
   </div>
+
+  <!-- ===== 응모권 지급 기준 ===== -->
+  <div class="ticket-box">
+    <div class="ticket-head"><span class="prize-kicker">Lucky Draw Tickets</span><span class="ticket-title">응모권 지급 기준</span></div>
+    <div class="ticket-grid">
+      <div class="ticket-col">
+        <div class="ticket-sub">순위 · 누적거리 / 누적고도 각 부문</div>
+        <div class="ticket-row"><span>1 – 10위</span><b>+3</b></div>
+        <div class="ticket-row"><span>11 – 20위</span><b>+2</b></div>
+        <div class="ticket-row"><span>21 – 30위</span><b>+1</b></div>
+      </div>
+      <div class="ticket-col">
+        <div class="ticket-sub">성과</div>
+        <div class="ticket-row"><span>단일 기록 최장거리 1위</span><b>+2</b></div>
+        <div class="ticket-row"><span>단일 기록 최고고도 1위</span><b>+2</b></div>
+        <div class="ticket-row"><span>10km 이상 기록 5회 이상 인증</span><b>+2</b></div>
+        <div class="ticket-row"><span>1,000m 이상 기록 5회 이상 인증</span><b>+2</b></div>
+        <div class="ticket-row"><span>기록 인증 2회 이상 참가자 전원</span><b>+1</b></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 광고 배너 A : SHYU SOCKS =====
+       ★ 이미지 교체: 저장소 ads/ 폴더에 같은 파일명으로 업로드하면 자동 반영
+         PC   : ads/shyu-pc.jpg      (2160 x 400)
+         모바일: ads/shyu-mobile.jpg  (1080 x 540)
+       ★ 클릭 시 이동할 주소: 아래 href 값 교체 -->
+  <a class="ad-banner ad-slot" href="https://pathflow.kr/" target="_blank" rel="noopener">
+    <picture>
+      <source media="(max-width:720px)" srcset="ads/shyu-mobile.jpg">
+      <img src="ads/shyu-pc.jpg" alt="SHYU SOCKS" loading="lazy" onerror="this.closest('.ad-slot').style.display='none'">
+    </picture>
+  </a>
 
   <!-- ===== 스팟라이트: 단일 세션 최장거리 / 최고고도 (TOP3) ===== -->
   <div class="spotlight-grid">
@@ -363,7 +408,18 @@
     </div>
   </div>
 
-  <!-- ===== AD SLOT 1 : 기존 배너 블록(base64 img 포함 a.ad-banner)을 이 주석 위치에 붙여넣기 ===== -->
+  <!-- ===== 광고 배너 B : Participation =====
+       ★ 이미지 교체: 저장소 ads/ 폴더에 같은 파일명으로 업로드하면 자동 반영
+         PC   : ads/participation-pc.jpg      (2160 x 400)
+         모바일: ads/participation-mobile.jpg  (1080 x 540)
+       ★ 클릭 시 이동할 주소: 아래 href 값 교체 -->
+  <a class="ad-banner ad-slot" href="https://pathflow.kr/" target="_blank" rel="noopener">
+    <picture>
+      <source media="(max-width:720px)" srcset="ads/participation-mobile.jpg">
+      <img src="ads/participation-pc.jpg" alt="Participation" loading="lazy" onerror="this.closest('.ad-slot').style.display='none'">
+    </picture>
+  </a>
+
 
   <!-- ===== 내 순위 확인 ===== -->
   <div class="my-rank-section">
@@ -376,18 +432,9 @@
     <div class="my-rank-result" id="myRankResult"></div>
   </div>
 
-  <!-- ===== 기록 제출 ===== -->
-  <div class="submit-cta">
-    <div class="submit-cta-title">기록 제출하기</div>
-    <div class="submit-cta-sub">워치 앱 또는 스트라바 기록 상세 화면을 제출하면 신청한 부문 순위에 반영됩니다<br>활동일로부터 3일 이내 제출한 기록만 인정</div>
-    <a class="submit-cta-btn" id="submitCtaBtn" href="#" target="_blank" rel="noopener">기록 제출하기 →</a>
-  </div>
-
-  <!-- ===== AD SLOT 2 : 기존 배너 블록을 이 주석 위치에 붙여넣기 ===== -->
-
   <!-- ===== 응원 댓글 ===== -->
   <div id="commentSection" style="display:none;">
-    <div class="section-label" style="margin-top:32px;">응원 댓글 <span class="badge badge-overall" id="commentCount">0</span></div>
+    <div class="section-label">응원 댓글 <span class="badge badge-overall" id="commentCount">0</span></div>
     <div class="comment-wrap">
       <div class="comment-form">
         <div class="comment-row">
@@ -400,6 +447,14 @@
       <div class="comments-list" id="commentsList"><div class="comment-empty">댓글을 불러오는 중...</div></div>
     </div>
   </div>
+
+  <!-- ===== 기록 제출 ===== -->
+  <div class="submit-cta">
+    <div class="submit-cta-title">기록 제출하기</div>
+    <div class="submit-cta-sub">워치 앱 또는 스트라바 기록 상세 화면을 제출하면 신청한 부문 순위에 반영됩니다<br>활동일로부터 3일 이내 제출한 기록만 인정</div>
+    <a class="submit-cta-btn" id="submitCtaBtn" href="#" target="_blank" rel="noopener">기록 제출하기 →</a>
+  </div>
+
 </div>
 
 <script>
@@ -411,8 +466,8 @@ const SHEET_GID       = '0';                                  // ★ 기록제�
 const FORM_URL        = 'PASTE_10월_기록제출_폼_URL';         // ★
 const ROSTER_SHEET_ID = 'PASTE_10월_참가신청_시트_ID';        // ★ 참가신청 응답 시트 (부문 조인용)
 const ROSTER_GID      = '0';                                  // ★ 참가신청 응답 탭
-const CHALLENGE_START = '2026-10-01';                         // ★ 기간 확정 후 교체
-const CHALLENGE_END   = '2026-10-31';                         // ★
+const CHALLENGE_START = '2026-10-05';                         // 10.5(월) 시작
+const CHALLENGE_END   = '2026-10-25';                         // 10.25(일) 종료
 const TOP_DIV         = 10;   // 부문 보드 기본 표시 인원
 
 const SHEET_CSV_URL  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${SHEET_GID}`;

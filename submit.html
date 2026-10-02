@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>기록 제출 · X-CHALLENGE 10월</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FBF4EA;        /* 크림 */
+    --card:#FFFDF9;
+    --line:#EAD9C4;      /* 살구 라인 */
+    --ink:#2A1F17;
+    --sub:#7A6656;
+    --accent:#B8321F;    /* 10월 포인트 — 단풍 레드 (랭크보드와 다르면 이 값만 바꾸세요) */
+    --accent-soft:#F6E1D6;
+    --ok:#2F6B3A;
+    --ok-soft:#E3EFE2;
+    --warn:#9A3412;
+    --warn-soft:#FCE7DA;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:"Noto Sans KR",system-ui,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:480px;margin:0 auto;padding:40px 16px 56px}
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--accent)}
+  h1{font-size:26px;font-weight:900;margin:6px 0 4px;letter-spacing:-.02em}
+  .lead{color:var(--sub);font-size:14px;margin:0 0 24px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}
+  label{display:block;font-size:13px;font-weight:700;margin-bottom:8px}
+  .row{display:flex;gap:8px}
+  input{flex:1;min-width:0;font:inherit;font-size:16px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+  input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+  button,.btn{font:inherit;font-weight:700;font-size:15px;border:0;border-radius:10px;padding:12px 16px;cursor:pointer;background:var(--accent);color:#fff;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap}
+  button:disabled{opacity:.5;cursor:default}
+  .hint{font-size:12px;color:var(--sub);margin-top:8px}
+  .result{margin-top:16px;display:none;border-radius:12px;padding:16px;font-size:14px}
+  .result.show{display:block}
+  .result.ok{background:var(--ok-soft)}
+  .result.no{background:var(--warn-soft);color:var(--warn)}
+  .who{font-size:17px;font-weight:700;color:var(--ink);margin:0 0 2px}
+  .meta{color:var(--sub);font-size:13px;margin:0 0 14px}
+  .pill{display:inline-block;font-size:12px;font-weight:700;padding:2px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent);margin-left:4px;vertical-align:2px}
+  .btn.full{width:100%}
+  .rules{margin-top:20px}
+  .rules h2{font-size:14px;font-weight:700;margin:0 0 10px}
+  .rules ul{margin:0;padding-left:18px;font-size:13px;color:var(--sub)}
+  .rules li{margin:4px 0}
+  .rules b{color:var(--ink)}
+  .back{display:inline-block;margin-top:24px;font-size:13px;color:var(--sub)}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="eyebrow">X-CHALLENGE · OCTOBER</div>
+  <h1>기록 제출하기</h1>
+  <p class="lead">참가신청 때 입력한 인스타그램 ID나 이름을 입력하면<br>내 정보가 채워진 제출 폼으로 이동해요.</p>
+
+  <section class="card">
+    <form id="f" autocomplete="off">
+      <label for="q">인스타그램 ID 또는 이름</label>
+      <div class="row">
+        <input id="q" placeholder="예) pathflow.run" autocapitalize="off" spellcheck="false">
+        <button id="go" type="submit">확인</button>
+      </div>
+      <p class="hint">@는 빼도 되고, 대소문자는 구분하지 않아요.</p>
+    </form>
+    <div id="res" class="result" role="status" aria-live="polite"></div>
+  </section>
+
+  <section class="card rules">
+    <h2>기록 인증 규칙</h2>
+    <ul>
+      <li><b>활동일로부터 3일 이내</b> 제출한 기록만 인정</li>
+      <li>마지막 제출은 <b>10/25(일) 23:59</b>까지</li>
+      <li>활동 <b>날짜·시간·거리·고도·경로·ID(닉네임)</b>가 모두 보이는 캡처만 인정</li>
+      <li>본인 부문 칸에만 숫자 입력 (누적거리 = km, 누적고도 = m)</li>
+      <li>기한이 지난 제출분은 별도 통보 없이 삭제될 수 있어요</li>
+    </ul>
+  </section>
+
+  <a class="back" href="./">← 랭크보드로 돌아가기</a>
+</main>
+
+<script>
+/* ===== 설정 ===== */
+const CONFIG = {
+  // 참가신청 응답 시트 (웹 공개 필요)
+  sheetId: "16f1pd_zVFlQmhSJZt2B-FdwT7gTnOgl4RqDZItPx8AE",
+  sheetName: "설문지 응답 시트1",
+  // 기록제출 폼 — '미리 채워진 링크'에서 값을 옮겨 넣으세요
+  formViewUrl: "https://docs.google.com/forms/d/e/1FAIpQLSdJpQG44E3DanaLmFQvIGoM4TmYOmik5tlNhBIrZMWBQCg1PA/viewform",
+  entry: {
+    name: "entry.798529027",
+    insta: "entry.139417802",
+    division: ""            // 기록제출 폼에 부문 질문 없음
+  },
+  dmUrl: "https://ig.me/m/xbionic.kr"   // 문의 DM 링크 (계정 확인 후 수정)
+};
+
+/* ===== 유틸 ===== */
+const normId = s => String(s||"")
+  .trim()
+  .replace(/^(https?:\/\/)?(www\.)?instagram\.com\//i,"")
+  .replace(/[/?#].*$/,"")
+  .replace(/^@+/,"")
+  .replace(/\s+/g,"")
+  .toLowerCase();
+const normName = s => String(s||"").replace(/\s+/g,"").toLowerCase();
+const esc = s => String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+function parseCSV(text){
+  const rows=[];let row=[],cell="",q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){
+      if(c==='"'){ if(text[i+1]==='"'){cell+='"';i++;} else q=false; }
+      else cell+=c;
+    }else if(c==='"') q=true;
+    else if(c===','){row.push(cell);cell="";}
+    else if(c==='\n'){row.push(cell);rows.push(row);row=[];cell="";}
+    else if(c!=='\r') cell+=c;
+  }
+  if(cell!==""||row.length){row.push(cell);rows.push(row);}
+  return rows;
+}
+
+let roster=null;
+async function loadRoster(){
+  if(roster) return roster;
+  const url=`https://docs.google.com/spreadsheets/d/${CONFIG.sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(CONFIG.sheetName)}&_=${Date.now()}`;
+  const res=await fetch(url);
+  if(!res.ok) throw new Error("sheet "+res.status);
+  const rows=parseCSV(await res.text());
+  const head=rows.shift().map(h=>h.trim());
+  const col=k=>head.findIndex(h=>h.includes(k));
+  const iName=col("이름"), iId=col("인스타"), iDiv=col("부문");
+  roster=rows
+    .map(r=>({name:(r[iName]||"").trim(), id:(r[iId]||"").trim(), div:(r[iDiv]||"").trim()}))
+    .filter(p=>p.name||p.id)
+    .map(p=>({...p, raw:p.id.replace(/^@+/,"").replace(/\s+/g,""), id:normId(p.id)}));   // id=비교용, raw=폼에 넣을 신청 원본
+  return roster;
+}
+
+function findPerson(q){
+  const id=normId(q), nm=normName(q);
+  const byId=roster.filter(p=>p.id && p.id===id);
+  if(byId.length) return {hit:byId[0]};
+  const byName=roster.filter(p=>normName(p.name)===nm);
+  if(byName.length===1) return {hit:byName[0]};
+  if(byName.length>1) return {dup:true};
+  return {};
+}
+
+function prefillUrl(p){
+  const u=new URL(CONFIG.formViewUrl);
+  u.searchParams.set("usp","pp_url");
+  if(CONFIG.entry.name) u.searchParams.set(CONFIG.entry.name,p.name);
+  if(CONFIG.entry.insta) u.searchParams.set(CONFIG.entry.insta,p.raw);
+  if(CONFIG.entry.division && p.div) u.searchParams.set(CONFIG.entry.division,p.div);
+  return u.toString();
+}
+
+/* ===== 동작 ===== */
+const $f=document.getElementById("f"),$q=document.getElementById("q"),$go=document.getElementById("go"),$res=document.getElementById("res");
+function show(cls,html){$res.className="result show "+cls;$res.innerHTML=html;}
+
+$f.addEventListener("submit",async e=>{
+  e.preventDefault();
+  const q=$q.value;
+  if(!q.trim()){ $q.focus(); return; }
+  $go.disabled=true;$go.textContent="확인 중";
+  try{
+    await loadRoster();
+    const r=findPerson(q);
+    if(r.hit){
+      const p=r.hit;
+      const ready=!!CONFIG.formViewUrl;
+      show("ok",`
+        <p class="who">${esc(p.name)}님 확인됐어요 ${p.div?`<span class="pill">${esc(p.div.replace(" 챌린지",""))}</span>`:""}</p>
+        <p class="meta">@${esc(p.raw)} · 이름과 ID가 채워진 폼이 열려요. <b>채워진 값은 수정하지 마세요.</b>${/거리/.test(p.div)?"<br>기록은 <b>누적거리(km)</b> 칸에만 입력해주세요.":/고도/.test(p.div)?"<br>기록은 <b>누적고도(m)</b> 칸에만 입력해주세요.":""}</p>
+        ${ready?`<a class="btn full" href="${esc(prefillUrl(p))}" target="_blank" rel="noopener">기록 제출 폼 열기</a>`
+               :`<p class="meta">제출 폼 연결 준비 중이에요.</p>`}`);
+    }else if(r.dup){
+      show("no",`같은 이름의 참가자가 여러 명이에요. <b>인스타그램 ID</b>로 입력해주세요.`);
+    }else{
+      show("no",`참가신청 내역을 찾지 못했어요.<br>신청할 때 쓴 ID 철자를 다시 확인해주세요. 참가신청은 10/2(금)에 마감되었어요.
+        <br><a href="${esc(CONFIG.dmUrl)}" target="_blank" rel="noopener" style="color:inherit;font-weight:700">DM으로 문의하기 →</a>`);
+    }
+  }catch(err){
+    show("no",`참가자 명단을 불러오지 못했어요. 잠시 후 다시 시도해주세요.`);
+  }finally{
+    $go.disabled=false;$go.textContent="확인";
+  }
+});
+</script>
+</body>
+</html>

@@ -281,6 +281,13 @@
   .comment-submit{background:var(--blue);}
   @media(max-width:720px){.mega-dual .mega-elev:first-child{border-bottom-color:var(--border);}}
 
+
+  /* ===== 재배치: 상품 → 순위표 → 내 순위 → 배너A → 스팟라이트 → 응모권 → 배너B → 댓글 → 제출 ===== */
+  .my-rank-section{margin:4px 0 28px;}
+  .ticket-box{margin:0 0 28px;}
+  .row.top1:not(.my-row) .athlete-name span{color:rgba(255,255,255,.75) !important;}
+  @media(max-width:720px){.ticket-box{margin:0 0 28px;}}
+
   /* ===== Cafe24 상세페이지(iframe) 안에서는 기록 제출 박스 숨김 ===== */
   html.embedded .submit-cta{display:none !important;}
   .comment-msg{font-size:12px;color:var(--muted);margin-right:auto;align-self:center;}
@@ -351,25 +358,35 @@
     </div>
   </div>
 
-  <!-- ===== 응모권 지급 기준 ===== -->
-  <div class="ticket-box">
-    <div class="ticket-head"><span class="prize-kicker">Lucky Draw Tickets</span><span class="ticket-title">응모권 지급 기준</span></div>
-    <div class="ticket-grid">
-      <div class="ticket-col">
-        <div class="ticket-sub">순위 · 누적거리 / 누적고도 각 부문</div>
-        <div class="ticket-row"><span>1 – 10위</span><b>+3</b></div>
-        <div class="ticket-row"><span>11 – 20위</span><b>+2</b></div>
-        <div class="ticket-row"><span>21 – 30위</span><b>+1</b></div>
-      </div>
-      <div class="ticket-col">
-        <div class="ticket-sub">성과</div>
-        <div class="ticket-row"><span>단일 기록 최장거리 1위</span><b>+2</b></div>
-        <div class="ticket-row"><span>단일 기록 최고고도 1위</span><b>+2</b></div>
-        <div class="ticket-row"><span>10km 이상 기록 5회 이상 인증</span><b>+2</b></div>
-        <div class="ticket-row"><span>1,000m 이상 기록 5회 이상 인증</span><b>+2</b></div>
-        <div class="ticket-row"><span>기록 인증 2회 이상 참가자 전원</span><b>+1</b></div>
+  <!-- ===== 부문 보드: 왼쪽 누적거리 / 오른쪽 누적고도 ===== -->
+  <div class="division-grid">
+    <div>
+      <div class="section-label">누적거리 <span class="badge badge-div">TOP 10</span><span class="div-count" id="countDist"></span></div>
+      <div class="div-rule">실외 러닝 · 로드러닝 · 평균 페이스 8분/km 미만 · 남녀 통합</div>
+      <div class="board-wrap">
+        <div class="board-header"><div>#</div><div>참가자</div><div class="col-right">누적거리</div><div class="col-right acts-hdr">인증</div></div>
+        <div id="bodyDist"><div class="state-msg">데이터를 불러오는 중...</div></div>
       </div>
     </div>
+    <div>
+      <div class="section-label">누적고도 <span class="badge badge-div">TOP 10</span><span class="div-count" id="countElev"></span></div>
+      <div class="div-rule">트레일러닝 · 하이킹 · 트레킹 · 남녀 통합</div>
+      <div class="board-wrap">
+        <div class="board-header"><div>#</div><div>참가자</div><div class="col-right">누적고도</div><div class="col-right acts-hdr">인증</div></div>
+        <div id="bodyElev"><div class="state-msg">데이터를 불러오는 중...</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 내 순위 확인 ===== -->
+  <div class="my-rank-section">
+    <div class="my-rank-title">내 순위 확인</div>
+    <div class="my-rank-sub">이름 또는 인스타 아이디를 입력하면 내 부문 순위를 확인할 수 있어요</div>
+    <div class="search-wrap">
+      <input class="search-input" id="searchInput" type="text" placeholder="이름 또는 @인스타아이디 입력" onkeydown="if(event.key==='Enter')searchMyRank()">
+      <button class="search-btn" onclick="searchMyRank()">확인</button>
+    </div>
+    <div class="my-rank-result" id="myRankResult"></div>
   </div>
 
   <!-- ===== 광고 배너 A : SHYU SOCKS =====
@@ -396,22 +413,23 @@
     </div>
   </div>
 
-  <!-- ===== 부문 보드: 왼쪽 누적거리 / 오른쪽 누적고도 ===== -->
-  <div class="division-grid">
-    <div>
-      <div class="section-label">누적거리 <span class="badge badge-div">TOP 10</span><span class="div-count" id="countDist"></span></div>
-      <div class="div-rule">실외 러닝 · 로드러닝 · 평균 페이스 8분/km 미만 · 남녀 통합</div>
-      <div class="board-wrap">
-        <div class="board-header"><div>#</div><div>참가자</div><div class="col-right">누적거리</div><div class="col-right acts-hdr">인증</div></div>
-        <div id="bodyDist"><div class="state-msg">데이터를 불러오는 중...</div></div>
+  <!-- ===== 응모권 지급 기준 ===== -->
+  <div class="ticket-box">
+    <div class="ticket-head"><span class="prize-kicker">Lucky Draw Tickets</span><span class="ticket-title">응모권 지급 기준</span></div>
+    <div class="ticket-grid">
+      <div class="ticket-col">
+        <div class="ticket-sub">순위 · 누적거리 / 누적고도 각 부문</div>
+        <div class="ticket-row"><span>1 – 10위</span><b>+3</b></div>
+        <div class="ticket-row"><span>11 – 20위</span><b>+2</b></div>
+        <div class="ticket-row"><span>21 – 30위</span><b>+1</b></div>
       </div>
-    </div>
-    <div>
-      <div class="section-label">누적고도 <span class="badge badge-div">TOP 10</span><span class="div-count" id="countElev"></span></div>
-      <div class="div-rule">트레일러닝 · 하이킹 · 트레킹 · 남녀 통합</div>
-      <div class="board-wrap">
-        <div class="board-header"><div>#</div><div>참가자</div><div class="col-right">누적고도</div><div class="col-right acts-hdr">인증</div></div>
-        <div id="bodyElev"><div class="state-msg">데이터를 불러오는 중...</div></div>
+      <div class="ticket-col">
+        <div class="ticket-sub">성과</div>
+        <div class="ticket-row"><span>단일 기록 최장거리 1위</span><b>+2</b></div>
+        <div class="ticket-row"><span>단일 기록 최고고도 1위</span><b>+2</b></div>
+        <div class="ticket-row"><span>10km 이상 기록 5회 이상 인증</span><b>+2</b></div>
+        <div class="ticket-row"><span>1,000m 이상 기록 5회 이상 인증</span><b>+2</b></div>
+        <div class="ticket-row"><span>기록 인증 2회 이상 참가자 전원</span><b>+1</b></div>
       </div>
     </div>
   </div>
@@ -427,18 +445,6 @@
       <img src="ads/participation-pc.jpg" alt="Participation" loading="lazy" onerror="this.closest('.ad-slot').style.display='none'">
     </picture>
   </a>
-
-
-  <!-- ===== 내 순위 확인 ===== -->
-  <div class="my-rank-section">
-    <div class="my-rank-title">내 순위 확인</div>
-    <div class="my-rank-sub">이름 또는 인스타 아이디를 입력하면 내 부문 순위를 확인할 수 있어요</div>
-    <div class="search-wrap">
-      <input class="search-input" id="searchInput" type="text" placeholder="이름 또는 @인스타아이디 입력" onkeydown="if(event.key==='Enter')searchMyRank()">
-      <button class="search-btn" onclick="searchMyRank()">확인</button>
-    </div>
-    <div class="my-rank-result" id="myRankResult"></div>
-  </div>
 
   <!-- ===== 응원 댓글 ===== -->
   <div id="commentSection" style="display:none;">

@@ -280,7 +280,15 @@
   .badge-overall,.badge-div{background:var(--blue);color:#fff;}
   .comment-submit{background:var(--blue);}
   @media(max-width:720px){.mega-dual .mega-elev:first-child{border-bottom-color:var(--border);}}
+
+  /* ===== Cafe24 상세페이지(iframe) 안에서는 기록 제출 박스 숨김 ===== */
+  html.embedded .submit-cta{display:none !important;}
+  .comment-msg{font-size:12px;color:var(--muted);margin-right:auto;align-self:center;}
+  .comment-msg.err{color:var(--blue);font-weight:700;}
+  .comment-actions{display:flex;align-items:center;gap:10px;}
+  .comment-item.mine{background:var(--warm2);}
 </style>
+<script>if(window.self!==window.top)document.documentElement.classList.add('embedded');</script>
 </head>
 <body>
 
@@ -438,11 +446,14 @@
     <div class="comment-wrap">
       <div class="comment-form">
         <div class="comment-row">
-          <input class="comment-name" id="cName" type="text" maxlength="20" placeholder="닉네임">
-          <textarea class="comment-text" id="cText" maxlength="300" placeholder="선수들에게 응원의 한마디를 남겨주세요 (최대 300자)" onkeydown="if(event.key==='Enter'&&(event.metaKey||event.ctrlKey))submitComment()"></textarea>
+          <input class="comment-name" id="cName" type="text" maxlength="12" placeholder="닉네임">
+          <textarea class="comment-text" id="cText" maxlength="100" placeholder="선수들에게 응원의 한마디를 남겨주세요 (최대 100자)" onkeydown="if(event.key==='Enter'&&(event.metaKey||event.ctrlKey))submitComment()"></textarea>
         </div>
         <input class="comment-hp" id="cHp" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
-        <button class="comment-submit" id="cSubmit" onclick="submitComment()">등록</button>
+        <div class="comment-actions">
+          <span class="comment-msg" id="cMsg">욕설·광고·링크는 통보 없이 삭제돼요</span>
+          <button class="comment-submit" id="cSubmit" onclick="submitComment()">등록</button>
+        </div>
       </div>
       <div class="comments-list" id="commentsList"><div class="comment-empty">댓글을 불러오는 중...</div></div>
     </div>
@@ -532,15 +543,9 @@ async function loadRoster(){
   }catch(e){ /* 로스터 실패 시 기록제출 폼의 부문 문항으로 대체 */ }
 }
 
-/* ===== 응원 댓글 설정 — ★ 댓글 폼 생성 후 교체 ===== */
-const COMMENT_SHEET_ID   = SHEET_ID;
-const COMMENT_SHEET_GID  = 'PASTE_댓글_응답탭_GID';       // ★
-const COMMENT_FORM_ID    = 'PASTE_댓글_폼_ID';            // ★
-const COMMENT_ENTRY_NAME = 'entry.0000000001';            // ★ 닉네임 entry
-const COMMENT_ENTRY_TEXT = 'entry.0000000002';            // ★ 댓글 entry
-const CCOL_TIME=0, CCOL_NAME=1, CCOL_TEXT=2;
-const COMMENT_READY = COMMENT_FORM_ID.indexOf('PASTE')<0 && COMMENT_ENTRY_NAME.indexOf('0000000001')<0;
-const COMMENT_CSV_URL = `https://docs.google.com/spreadsheets/d/${COMMENT_SHEET_ID}/gviz/tq?tqx=out:csv&gid=${COMMENT_SHEET_GID}`;
+/* ===== 응원 댓글 설정 — Apps Script 웹 앱 (응원댓글 시트) ===== */
+const COMMENT_API   = 'https://script.google.com/macros/s/AKfycbwKhDrQVaRsuaD3qmlQfclgxGywSnuggUFvWKEWHo2AUoXQvd2Jgf2U4YjzO-Wsca6G/exec';
+const COMMENT_READY = COMMENT_API.indexOf('https://')===0;
 
 const INVALID_KEYWORDS = ['스크린샷','누적고도','누적거리','찍어주세요','업로드','제출','trail','pledge','http','www','함께','나오게','러닝','일시','파일','성별','부문'];
 function isValidName(n){if(!n||n.length<2||n.length>30)return false;return!INVALID_KEYWORDS.some(k=>n.toLowerCase().includes(k.toLowerCase()));}
@@ -588,7 +593,7 @@ function buildRows(sorted,cfg,myName){
     const isMe=myName&&r.name.toLowerCase()===myName.toLowerCase();
     return `<div class="row ${isMe?'my-row':(rc[rank]||'')}" style="animation-delay:${Math.min(i,20)*25}ms">
       <div class="rank-num ${isMe?'':(rn[rank]||'')}">${rank}</div>
-      <div class="athlete-info"><div class="athlete-name">${r.name}${r.insta?` <span style="color:var(--muted);font-weight:500;">(@${r.insta})</span>`:''}</div></div>
+      <div class="athlete-info"><div class="athlete-name">${escapeHtml(r.name)}${r.insta?` <span style="color:var(--muted);font-weight:500;">(@${escapeHtml(r.insta)})</span>`:''}</div></div>
       <div class="elev-col"><div><span class="elev-main">${fmt(r.val,cfg.dec)}</span><span class="elev-unit"> ${cfg.unit}</span></div><div class="elev-bar-wrap"><div class="elev-bar" style="width:${pct}%"></div></div></div>
       <div class="acts-col">${r.acts}회</div>
     </div>`;
@@ -636,7 +641,7 @@ function spotlightHTML(divKey,cfg){
   if(!top3.length) return '<div class="spotlight-empty">아직 기록 없음</div>';
   return top3.map((r,i)=>`<div class="sp-row">
     <div class="sp-rank">${i+1}</div>
-    <div class="sp-info"><div class="spotlight-name">${r.name}${r.insta?` <span class="sp-insta">(@${r.insta})</span>`:''}</div></div>
+    <div class="sp-info"><div class="spotlight-name">${escapeHtml(r.name)}${r.insta?` <span class="sp-insta">(@${escapeHtml(r.insta)})</span>`:''}</div></div>
     <div class="spotlight-value">${fmt(r.v,cfg.dec)}<span class="unit">${cfg.unit}</span></div>
   </div>`).join('');
 }
@@ -675,13 +680,13 @@ function searchMyRank(){
     if(f){ found=f; cfg=DIV[k]; list=l; break; }
   }
   if(!found){
-    result.innerHTML=`<div class="my-rank-card"><div class="my-rank-notfound">"${query}" 와 일치하는 참가자를 찾을 수 없습니다</div></div>`;
+    result.innerHTML=`<div class="my-rank-card"><div class="my-rank-notfound">"${escapeHtml(query)}" 와 일치하는 참가자를 찾을 수 없습니다</div></div>`;
     renderAll(null); return;
   }
   const rank=list.findIndex(r=>r.name===found.name)+1;
   result.innerHTML=`<div class="my-rank-card">
     <div class="card-label">검색 결과</div>
-    <div class="my-rank-name">${found.name}${found.insta?` <span style="color:rgba(255,255,255,.4);font-weight:400;">(@${found.insta})</span>`:''}<span class="div-tag">${cfg.label} 부문</span></div>
+    <div class="my-rank-name">${escapeHtml(found.name)}${found.insta?` <span style="color:rgba(255,255,255,.4);font-weight:400;">(@${escapeHtml(found.insta)})</span>`:''}<span class="div-tag">${cfg.label} 부문</span></div>
     <div class="my-rank-grid">
       <div class="my-rank-item"><div class="my-rank-num">${rank}</div><div class="my-rank-lbl">${cfg.label} 순위 / ${list.length}명</div></div>
       <div class="my-rank-item"><div class="my-rank-num">${fmt(found.val,cfg.dec)}<span style="font-size:14px;color:rgba(198,40,40,.8)">${cfg.unit}</span></div><div class="my-rank-lbl">${cfg.label}</div></div>
@@ -744,10 +749,10 @@ document.getElementById('submitCtaBtn').href=FORM_URL;
 setInterval(async()=>{await loadRoster();await loadData();},5*60*1000);
 
 /* ===== 응원 댓글 동작 ===== */
-let commentsData=[], lastPost=0;
+let commentsData=[], lastPost=0, myPosted=null;
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function fmtTime(raw){
-  const d=new Date(raw); if(isNaN(d))return raw||'';
+  const d=new Date(raw); if(!raw||isNaN(d))return '';
   const s=(Date.now()-d.getTime())/1000;
   if(s<60)return '방금 전';
   if(s<3600)return Math.floor(s/60)+'분 전';
@@ -758,51 +763,56 @@ function renderComments(){
   const list=document.getElementById('commentsList');
   document.getElementById('commentCount').textContent=commentsData.length;
   if(!commentsData.length){list.innerHTML='<div class="comment-empty">아직 댓글이 없어요. 첫 응원을 남겨주세요!</div>';return;}
-  list.innerHTML=commentsData.map(c=>`<div class="comment-item">
+  list.innerHTML=commentsData.map(c=>{
+    const mine=myPosted&&c.name===myPosted.name&&c.text===myPosted.text;
+    return `<div class="comment-item${mine?' mine':''}">
     <div class="comment-head"><span class="comment-author">${escapeHtml(c.name)}</span><span class="comment-time">${fmtTime(c.time)}</span></div>
     <div class="comment-body">${escapeHtml(c.text)}</div>
-  </div>`).join('');
+  </div>`;}).join('');
 }
-function parseComments(csv){
-  const rows=csvRows(csv); if(rows.length<2)return[];
-  return rows.slice(1).map(c=>({time:c[CCOL_TIME]||'',name:c[CCOL_NAME]||'익명',text:c[CCOL_TEXT]||''})).filter(c=>c.text).reverse();
-}
+function commentMsg(t,err){const m=document.getElementById('cMsg');m.textContent=t;m.className='comment-msg'+(err?' err':'');}
 async function loadComments(){
   if(!COMMENT_READY)return;
   try{
-    const res=await fetch(COMMENT_CSV_URL+'&t='+Date.now());
+    const res=await fetch(COMMENT_API+'?t='+Date.now());
     if(!res.ok)throw 0;
-    commentsData=parseComments(await res.text());
+    const d=await res.json();
+    if(!d||!d.ok)throw 0;
+    commentsData=(d.items||[]).map(c=>({time:c.t||'',name:c.name||'익명',text:c.msg||''})).filter(c=>c.text);
     renderComments();
-  }catch(e){}
+  }catch(e){
+    if(!commentsData.length) document.getElementById('commentsList').innerHTML='<div class="comment-empty">댓글을 불러오지 못했어요. 잠시 후 다시 시도해주세요.</div>';
+  }
 }
 async function submitComment(){
-  if(!COMMENT_READY){alert('댓글 기능이 아직 설정되지 않았습니다.');return;}
-  if(document.getElementById('cHp').value)return; // 봇 차단(허니팟)
+  if(!COMMENT_READY)return;
+  const hp=document.getElementById('cHp').value;
   const name=document.getElementById('cName').value.trim();
   const text=document.getElementById('cText').value.trim();
-  if(!name){alert('닉네임을 입력해주세요.');return;}
-  if(text.length<2){alert('응원 한마디를 입력해주세요.');return;}
-  const now=Date.now();
-  if(now-lastPost<10000){alert('잠시 후 다시 등록해주세요.');return;}
-  lastPost=now;
+  if(!name){commentMsg('닉네임을 입력해주세요.',true);return;}
+  if(text.length<2){commentMsg('응원 한마디를 입력해주세요.',true);return;}
+  const wait=30000-(Date.now()-lastPost);
+  if(wait>0){commentMsg(Math.ceil(wait/1000)+'초 후에 다시 등록할 수 있어요.',true);return;}
   const btn=document.getElementById('cSubmit'); btn.disabled=true; btn.textContent='등록 중...';
   try{
-    const fd=new FormData();
-    fd.append(COMMENT_ENTRY_NAME,name);
-    fd.append(COMMENT_ENTRY_TEXT,text);
-    await fetch(`https://docs.google.com/forms/d/e/${COMMENT_FORM_ID}/formResponse`,{method:'POST',mode:'no-cors',body:fd});
-    commentsData.unshift({time:new Date().toISOString(),name:name,text:text});
-    renderComments();
-    document.getElementById('cText').value='';
-    setTimeout(loadComments,4000);
-  }catch(e){alert('등록에 실패했어요. 잠시 후 다시 시도해주세요.');}
+    const res=await fetch(COMMENT_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({name:name,msg:text,hp:hp})});
+    const d=await res.json();
+    if(d&&d.ok){
+      lastPost=Date.now(); myPosted={name:name,text:text};
+      try{localStorage.setItem('xcCheerName',name);}catch(e){}
+      document.getElementById('cText').value='';
+      commentMsg('응원이 등록됐어요. 고마워요!',false);
+      await loadComments();
+    }else commentMsg((d&&d.error)||'등록하지 못했어요. 잠시 후 다시 시도해주세요.',true);
+  }catch(e){commentMsg('등록하지 못했어요. 잠시 후 다시 시도해주세요.',true);}
   btn.disabled=false; btn.textContent='등록';
 }
+try{const n=localStorage.getItem('xcCheerName'); if(n) document.getElementById('cName').value=n;}catch(e){}
 if(COMMENT_READY){
   document.getElementById('commentSection').style.display='block';
   loadComments();
-  setInterval(loadComments,30000);
+  setInterval(loadComments,60000);
 }
 
 /* ===== Cafe24 iframe 높이 자동맞춤 (무한증가 방지형) ===== */

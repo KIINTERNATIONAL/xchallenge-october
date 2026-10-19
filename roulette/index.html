@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>10월 럭키드로우 룰렛 — XBIONIC X CHALLENGE</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f7f4ef; --surface:#fff; --surface2:#FFF7F3; --border:#e5dccd;
+  --warm:#FCEDE6; --warm-line:#F2D2C5;
+  --ink:#2A1512; --ink-mute:rgba(62,28,22,.58); --muted2:#8a8172;
+  --red:#C62828; --red-deep:#8E1B1B;
+  --lose:#F6E9E1; --lose-ink:#B99B8E;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Noto Sans KR','Noto Sans CJK KR',sans-serif;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:640px;margin:0 auto;padding:0 16px;}
+
+/* HERO */
+.hero{background:linear-gradient(180deg,#FDF1EB 0%,#F9E1D6 100%);border-bottom:1px solid var(--warm-line);padding:44px 20px 52px;text-align:center;}
+.hero-label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:10px;}
+.hero-month{font-size:clamp(13px,3vw,16px);font-weight:700;letter-spacing:.12em;color:var(--red);margin-bottom:4px;}
+.hero-title{font-weight:900;font-size:clamp(44px,12vw,76px);line-height:.95;letter-spacing:-.02em;color:var(--ink);}
+.hero-title span{color:var(--red);}
+.hero-sub{margin-top:14px;font-size:13.5px;color:var(--ink-mute);line-height:1.7;word-break:keep-all;}
+.hero-collab{margin-top:10px;font-size:11px;letter-spacing:.08em;color:var(--ink-mute);}
+.hero-collab b{color:var(--ink);font-weight:600;}
+
+/* LOGIN */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px 20px;margin-top:-28px;position:relative;z-index:2;box-shadow:0 6px 24px rgba(62,28,22,.07);}
+.panel-label{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px;}
+.panel-sub{font-size:12px;color:var(--ink-mute);margin-bottom:14px;line-height:1.6;word-break:keep-all;}
+.field{display:flex;flex-direction:column;gap:8px;}
+.inp{width:100%;padding:13px 15px;border:1px solid var(--warm-line);border-radius:8px;font-size:15px;font-family:inherit;background:#fff;color:var(--ink);}
+.inp::placeholder{color:rgba(62,28,22,.35);}
+.inp:focus{outline:none;border-color:var(--red);}
+.btn{margin-top:4px;padding:14px;border:none;border-radius:8px;background:var(--red);color:#fff;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;transition:background .15s;}
+.btn:hover{background:var(--red-deep);}
+.btn:disabled{background:#d9c9c0;cursor:not-allowed;}
+.msg{margin-top:12px;font-size:13px;line-height:1.6;color:var(--ink-mute);word-break:keep-all;}
+.msg.err{color:var(--red);font-weight:600;}
+
+/* USER BAR */
+.userbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;background:var(--warm);border:1px solid var(--warm-line);border-radius:12px;margin-bottom:10px;}
+.u-name{font-size:16px;font-weight:800;color:var(--ink);}
+.u-sub{font-size:12px;color:var(--ink-mute);margin-top:2px;}
+.u-left{text-align:right;flex:none;}
+.u-num{font-weight:900;font-size:34px;line-height:1;color:var(--red);}
+.u-lbl{font-size:11px;color:var(--ink-mute);margin-top:2px;}
+.detail{font-size:12px;color:var(--ink-mute);line-height:1.6;padding:0 4px;margin-bottom:24px;word-break:keep-all;}
+.detail b{color:var(--ink);font-weight:600;}
+
+/* WHEEL */
+.stage{display:none;padding:28px 0 40px;}
+.wheel-box{position:relative;width:min(430px,90vw);aspect-ratio:1;margin:0 auto 26px;}
+.pointer{position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:16px solid transparent;border-right:16px solid transparent;border-top:28px solid var(--ink);z-index:5;filter:drop-shadow(0 2px 4px rgba(0,0,0,.2));}
+.wheel{width:100%;height:100%;border-radius:50%;border:9px solid var(--ink);position:relative;overflow:hidden;transition:transform 4.4s cubic-bezier(.15,.68,.14,1);box-shadow:0 6px 28px rgba(62,28,22,.16);}
+.wheel-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+.wl{font-family:'Noto Sans KR',sans-serif;font-size:3.6px;font-weight:800;fill:#fff;}
+.wl.lose{fill:var(--lose-ink);font-size:3.4px;font-weight:700;letter-spacing:1px;}
+.wl.gone{fill:#c9b8b0;text-decoration:line-through;}
+.hub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:20%;aspect-ratio:1;background:var(--ink);border-radius:50%;z-index:4;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:14px;letter-spacing:.06em;box-shadow:0 2px 10px rgba(0,0,0,.25);}
+
+.spin-btn{display:block;width:100%;max-width:320px;margin:0 auto;padding:18px;border:none;border-radius:10px;background:var(--red);color:#fff;font-size:17px;font-weight:900;font-family:inherit;cursor:pointer;transition:background .15s,transform .1s;}
+.spin-btn:hover:not(:disabled){background:var(--red-deep);}
+.spin-btn:active:not(:disabled){transform:scale(.98);}
+.spin-btn:disabled{background:#d9c9c0;cursor:not-allowed;}
+
+/* RESULT */
+.result{margin-top:24px;padding:24px 20px;border-radius:12px;text-align:center;display:none;animation:pop .35s ease;}
+@keyframes pop{from{opacity:0;transform:scale(.94);}to{opacity:1;transform:scale(1);}}
+.result.win{background:var(--red);color:#fff;}
+.result.lose{background:var(--surface);border:1px solid var(--border);}
+.r-label{font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px;}
+.result.win .r-label{color:rgba(255,255,255,.75);}
+.result.lose .r-label{color:var(--muted2);}
+.r-item{font-size:23px;font-weight:900;line-height:1.35;word-break:keep-all;}
+.r-note{margin-top:10px;font-size:13px;line-height:1.7;word-break:keep-all;}
+.result.win .r-note{color:rgba(255,255,255,.85);}
+.result.lose .r-note{color:var(--ink-mute);}
+
+/* LEGEND */
+.legend{margin-top:24px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.legend h3{font-size:12px;font-weight:700;color:var(--ink-mute);padding:14px 18px 12px;border-bottom:1px solid var(--border);}
+.lg-row{display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid var(--border);}
+.lg-row:last-child{border-bottom:none;}
+.lg-no{flex:none;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;background:var(--red);}
+.lg-name{flex:1;font-size:14px;font-weight:600;color:var(--ink);word-break:keep-all;line-height:1.4;}
+.lg-left{flex:none;font-size:12.5px;font-weight:700;color:var(--red-deep);}
+.lg-row.out{background:#fcf8f5;}
+.lg-row.out .lg-no{background:#e2d4cc;}
+.lg-row.out .lg-name{color:#bfaea6;text-decoration:line-through;}
+.lg-row.out .lg-left{color:#bfaea6;font-size:11px;letter-spacing:.06em;}
+.lg-foot{padding:12px 18px;font-size:12px;color:var(--ink-mute);line-height:1.6;background:var(--surface2);word-break:keep-all;}
+
+/* HISTORY */
+.history{margin-top:28px;}
+.history h3{font-size:12px;font-weight:700;color:var(--ink-mute);margin-bottom:10px;}
+.h-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:7px;font-size:14px;}
+.h-idx{font-weight:800;font-size:13px;color:var(--muted2);flex:none;}
+.h-res{font-weight:700;text-align:right;word-break:keep-all;}
+.h-res.win{color:var(--red);}
+.h-res.lose{color:var(--muted2);}
+
+.done{display:none;margin-top:24px;padding:24px 20px;background:var(--surface);border:1px dashed var(--warm-line);border-radius:12px;text-align:center;font-size:14px;line-height:1.8;color:var(--ink-mute);word-break:keep-all;}
+.done b{color:var(--ink);}
+
+footer{padding:32px 20px 44px;text-align:center;font-size:12px;color:var(--ink-mute);line-height:1.8;word-break:keep-all;}
+footer b{color:var(--ink);}
+footer a{color:var(--red-deep);text-decoration:none;font-weight:700;}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-label">XBIONIC KOREA · 2026</div>
+  <div class="hero-month">OCTOBER LUCKY DRAW</div>
+  <div class="hero-title">LUCKY <span>DRAW</span></div>
+  <div class="hero-sub">10월 누적거리 · 누적고도 레이스<br>응모권 1장 = 룰렛 1회 · 응모권이 많을수록 기회가 늘어납니다</div>
+  <div class="hero-collab"><b>X-BIONIC</b> × <b>PATHFLOW</b></div>
+</div>
+
+<div class="wrap">
+
+  <!-- 본인 확인 -->
+  <div class="panel" id="loginPanel">
+    <div class="panel-label">본인 확인</div>
+    <div class="panel-sub">참가 신청과 기록 제출 때 쓴 <b>인스타그램 ID</b>와 <b>이름</b>을 그대로 입력해 주세요</div>
+    <div class="field">
+      <input class="inp" id="instaInput" type="text" placeholder="인스타그램 ID (예: xbionic.kr)" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <input class="inp" id="nameInput" type="text" placeholder="이름" autocomplete="off">
+      <button class="btn" id="checkBtn">응모권 확인</button>
+    </div>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+
+  <!-- 룰렛 -->
+  <div class="stage" id="stage">
+    <div class="userbar">
+      <div>
+        <div class="u-name" id="uName">—</div>
+        <div class="u-sub" id="uSub">—</div>
+      </div>
+      <div class="u-left">
+        <div class="u-num" id="uNum">0</div>
+        <div class="u-lbl">남은 횟수</div>
+      </div>
+    </div>
+    <div class="detail" id="uDetail"></div>
+
+    <div class="wheel-box">
+      <div class="pointer"></div>
+      <div class="wheel" id="wheel"></div>
+      <div class="hub">SPIN</div>
+    </div>
+
+    <button class="spin-btn" id="spinBtn">룰렛 돌리기</button>
+
+    <div class="result" id="result">
+      <div class="r-label" id="rLabel"></div>
+      <div class="r-item" id="rItem"></div>
+      <div class="r-note" id="rNote"></div>
+    </div>
+
+    <div class="done" id="done">
+      보유하신 응모권을 모두 사용하셨습니다.<br>
+      참여해 주셔서 감사합니다 — <b>다음 달 필드에서 다시 만나요.</b>
+    </div>
+
+    <div class="legend" id="legendBox" style="display:none;">
+      <h3>경품 목록</h3>
+      <div id="legendList"></div>
+      <div class="lg-foot">번호가 없는 칸은 <b>꽝</b>입니다 · 실물 경품은 1인 1개까지 당첨됩니다</div>
+    </div>
+
+    <div class="history" id="history" style="display:none;">
+      <h3>내 스핀 기록</h3>
+      <div id="historyList"></div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  경품 당첨자에게는 <b>인스타그램 DM</b>으로<br>
+  사이즈와 배송 정보를 개별 안내드립니다.<br><br>
+  문의 · <a href="https://www.instagram.com/xbionic.kr/" target="_blank" rel="noopener">@xbionic.kr</a>
+</footer>
+
+<script>
+/* ===== CONFIG — Apps Script 웹 앱 배포 URL 붙여넣기 ===== */
+const API_URL = 'PASTE_WEB_APP_URL_HERE';
+/* ======================================================== */
+
+const PRIZE_C = ['#C62828','#A82222'];   // 경품 칸 (번갈아)
+const LOSE_C  = '#F6E9E1';               // 꽝 칸
+const SVGNS   = 'http://www.w3.org/2000/svg';
+
+let userInsta='', userNameIn='', remaining=0;
+let rotation=0, spinning=false, spinCount=0;
+let SEGMENTS=[], segMid=[], labelEls=[], soldOut=new Set();
+
+function nk(s){ return String(s||'').replace(/\s/g,'').toUpperCase(); }
+function esc(s){ return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function polar(angle,r){ const rad=angle*Math.PI/180; return [50+r*Math.sin(rad), 50-r*Math.cos(rad)]; }
+
+/* ---------- 휠: 서버 경품재고로 자동 구성 (경품 / 꽝 번갈아) ---------- */
+function buildWheel(stock){
+  SEGMENTS=[]; segMid=[]; labelEls=[];
+  let no=0;
+  stock.forEach(st=>{
+    SEGMENTS.push({ item:st.item, label:st.label||st.item, prize:true, no:++no, c:PRIZE_C[(no-1)%2] });
+    SEGMENTS.push({ item:'', label:'꽝', prize:false, no:0, c:LOSE_C });
+  });
+  if(!SEGMENTS.length) SEGMENTS.push({ item:'', label:'꽝', prize:false, no:0, c:LOSE_C });
+
+  const wheel=document.getElementById('wheel');
+  wheel.innerHTML='';
+  const svg=document.createElementNS(SVGNS,'svg');
+  svg.setAttribute('viewBox','0 0 100 100');
+  svg.setAttribute('class','wheel-svg');
+
+  const deg=360/SEGMENTS.length;
+  SEGMENTS.forEach((s,i)=>{
+    const mid=deg*i+deg/2;
+    segMid[i]=mid;
+    let read=mid-90;
+    if(read>90&&read<270) read-=180;
+    const [lx,ly]=polar(mid,28);
+    const t=document.createElementNS(SVGNS,'text');
+    t.setAttribute('x',lx); t.setAttribute('y',ly);
+    t.setAttribute('text-anchor','middle');
+    t.setAttribute('dominant-baseline','central');
+    t.setAttribute('transform',`rotate(${read} ${lx} ${ly})`);
+    t.setAttribute('class',s.prize?'wl':'wl lose');
+    t.textContent=s.label;
+    svg.appendChild(t);
+    labelEls[i]=t;
+  });
+  wheel.appendChild(svg);
+
+  /* 긴 이름은 칸 안에 맞게 축소 */
+  const MAX_LEN=34;
+  labelEls.forEach(t=>{
+    try{
+      if(t.getComputedTextLength()>MAX_LEN){
+        t.setAttribute('textLength',MAX_LEN);
+        t.setAttribute('lengthAdjust','spacingAndGlyphs');
+      }
+    }catch(e){}
+  });
+  paintWheel();
+}
+
+function paintWheel(){
+  const deg=360/SEGMENTS.length, stops=[];
+  SEGMENTS.forEach((s,i)=>{
+    const gone=s.prize&&soldOut.has(i);
+    stops.push(`${gone?'#E8DCD5':s.c} ${deg*i}deg ${deg*(i+1)}deg`);
+    if(labelEls[i]) labelEls[i].classList.toggle('gone',gone);
+  });
+  document.getElementById('wheel').style.background=`conic-gradient(${stops.join(',')})`;
+}
+
+/* 재고 → 소진 표시 + 경품표 */
+function applyStock(stock){
+  if(!Array.isArray(stock)) return;
+  soldOut=new Set();
+  const leftOf={};
+  stock.forEach(st=>{
+    SEGMENTS.forEach((s,i)=>{
+      if(s.prize&&nk(s.item)===nk(st.item)){
+        leftOf[i]=Number(st.left)||0;
+        if(leftOf[i]<=0) soldOut.add(i);
+      }
+    });
+  });
+  const list=document.getElementById('legendList');
+  list.innerHTML=SEGMENTS.map((s,i)=>{
+    if(!s.prize) return '';
+    const gone=soldOut.has(i), left=leftOf[i];
+    return `<div class="lg-row${gone?' out':''}">
+      <span class="lg-no">${s.no}</span>
+      <span class="lg-name">${esc(s.item)}</span>
+      <span class="lg-left">${gone?'SOLD OUT':(left!==undefined?left+'개 남음':'')}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('legendBox').style.display='block';
+  paintWheel();
+}
+
+/* ---------- 본인 확인 ---------- */
+document.getElementById('checkBtn').addEventListener('click',checkUser);
+['instaInput','nameInput'].forEach(id=>{
+  document.getElementById(id).addEventListener('keydown',e=>{ if(e.key==='Enter') checkUser(); });
+});
+
+function loginMsg(t,err){ const m=document.getElementById('loginMsg'); m.className='msg'+(err?' err':''); m.textContent=t; }
+
+async function checkUser(){
+  if(API_URL.indexOf('https://')!==0){ loginMsg('룰렛 오픈 준비 중입니다.',true); return; }
+  const insta=document.getElementById('instaInput').value.trim().replace(/^@/,'');
+  const name =document.getElementById('nameInput').value.trim();
+  if(!insta){ loginMsg('인스타그램 ID를 입력해 주세요.',true); return; }
+  if(!name){ loginMsg('이름을 입력해 주세요.',true); return; }
+
+  const btn=document.getElementById('checkBtn');
+  btn.disabled=true; loginMsg('확인 중입니다...');
+  try{
+    const res=await fetch(`${API_URL}?action=check&insta=${encodeURIComponent(insta)}&name=${encodeURIComponent(name)}`);
+    const data=await res.json();
+    if(!data.ok){
+      loginMsg(data.error==='NOT_FOUND'
+        ? '일치하는 응모권이 없습니다. 기록 제출 때 쓴 인스타 ID와 이름을 그대로 입력했는지 확인해 주세요. (응모권은 30위 이내 또는 기록 2회 이상 인증 시 지급)'
+        : '조회에 실패했습니다. 잠시 후 다시 시도해 주세요.', true);
+      btn.disabled=false; return;
+    }
+    userInsta=insta; userNameIn=name; remaining=data.remaining;
+
+    document.getElementById('loginPanel').style.display='none';
+    document.getElementById('stage').style.display='block';
+    document.getElementById('uName').textContent=data.name+'님';
+    document.getElementById('uSub').textContent=`@${data.insta} · ${data.division} · 응모권 ${data.total}장`;
+    document.getElementById('uDetail').innerHTML=data.detail?'<b>응모권 내역</b> · '+esc(data.detail):'';
+
+    buildWheel(data.stock||[]);
+    applyStock(data.stock);
+    (data.history||[]).forEach(item=>addHistory(item));
+    updateRemaining();
+  }catch(err){
+    loginMsg('네트워크 오류가 발생했습니다. 다시 시도해 주세요.',true);
+    btn.disabled=false;
+  }
+}
+
+function updateRemaining(){
+  document.getElementById('uNum').textContent=remaining;
+  const btn=document.getElementById('spinBtn');
+  if(remaining<=0){
+    btn.disabled=true;
+    btn.textContent='응모권을 모두 사용했습니다';
+    document.getElementById('done').style.display='block';
+  }else{
+    btn.disabled=spinning;
+    btn.textContent=`룰렛 돌리기 (${remaining}회 남음)`;
+  }
+}
+
+/* ---------- 스핀 ---------- */
+document.getElementById('spinBtn').addEventListener('click',spin);
+
+async function spin(){
+  if(spinning||remaining<=0) return;
+  spinning=true;
+  const btn=document.getElementById('spinBtn'), result=document.getElementById('result');
+  btn.disabled=true; btn.textContent='추첨 중...';
+  result.style.display='none';
+
+  try{
+    const res=await fetch(`${API_URL}?action=spin&insta=${encodeURIComponent(userInsta)}&name=${encodeURIComponent(userNameIn)}`);
+    const data=await res.json();
+    if(!data.ok){
+      alert(data.error==='NO_TICKET'?'남은 응모권이 없습니다.'
+          : data.error==='BUSY'?'참여자가 많아 잠시 대기 중입니다. 다시 눌러 주세요.'
+          : '오류가 발생했습니다. 다시 시도해 주세요.');
+      spinning=false; updateRemaining(); return;
+    }
+    const idx=pickSegment(data);
+    rotation+=360*5+(360-((rotation+segMid[idx])%360));
+    document.getElementById('wheel').style.transform=`rotate(${rotation}deg)`;
+
+    setTimeout(()=>{
+      remaining=data.remaining;
+      showResult(data);
+      addHistory(data.result==='WIN'?data.item:'꽝');
+      applyStock(data.stock);
+      spinning=false;
+      updateRemaining();
+    },4500);
+  }catch(err){
+    alert('네트워크 오류가 발생했습니다. 다시 시도해 주세요.');
+    spinning=false; updateRemaining();
+  }
+}
+
+function pickSegment(data){
+  if(data.result==='WIN'){
+    const i=SEGMENTS.findIndex(s=>s.prize&&nk(s.item)===nk(data.item));
+    if(i>=0) return i;
+  }
+  const lose=SEGMENTS.map((s,i)=>s.prize?-1:i).filter(i=>i>=0);
+  return lose.length?lose[Math.floor(Math.random()*lose.length)]:0;
+}
+
+function showResult(data){
+  const box=document.getElementById('result');
+  if(data.result==='WIN'){
+    box.className='result win';
+    document.getElementById('rLabel').textContent='Congratulations';
+    document.getElementById('rItem').textContent=data.item;
+    document.getElementById('rNote').textContent=data.isReal
+      ?'축하합니다! 사이즈와 배송 정보는 인스타그램 DM으로 개별 안내드립니다.'
+      :'축하합니다! 쿠폰 사용 방법은 인스타그램 DM으로 안내드립니다.';
+  }else{
+    box.className='result lose';
+    document.getElementById('rLabel').textContent='Result';
+    document.getElementById('rItem').textContent='아쉽지만 꽝!';
+    document.getElementById('rNote').textContent=data.allGone
+      ?'준비된 경품이 모두 소진되었습니다. 끝까지 함께해 주셔서 감사합니다.'
+      :(remaining>0?'아직 기회가 남아 있어요. 한 번 더 돌려보세요.':'참여해 주셔서 감사합니다. 다음 챌린지에서 만나요.');
+  }
+  box.style.display='block';
+}
+
+function addHistory(item){
+  spinCount++;
+  document.getElementById('history').style.display='block';
+  const win=item&&item!=='꽝';
+  const row=document.createElement('div');
+  row.className='h-item';
+  row.innerHTML=`<span class="h-idx">${String(spinCount).padStart(2,'0')}</span><span class="h-res ${win?'win':'lose'}">${esc(win?item:'꽝')}</span>`;
+  document.getElementById('historyList').appendChild(row);
+}
+</script>
+</body>
+</html>

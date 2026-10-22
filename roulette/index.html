@@ -359,26 +359,64 @@ function updateRemaining(){
 /* ---------- 스핀 ---------- */
 document.getElementById('spinBtn').addEventListener('click',spin);
 
+/* 클릭 즉시 일정 속도로 회전 → 서버 결과가 오면 해당 칸으로 감속 정지 */
+const FREE_SPEED = 0.9;     // 자유 회전 속도 (deg/ms = 초당 900°)
+const STOP_MS    = 3600;    // 결과 수신 후 감속해서 멈추는 시간
+let spinRAF=null, freeBase=0, freeStart=0;
+
+function startFreeSpin(){
+  const w=document.getElementById('wheel');
+  w.style.transition='none';
+  freeBase=rotation; freeStart=performance.now();
+  const step=t=>{
+    rotation=freeBase+(t-freeStart)*FREE_SPEED;
+    w.style.transform=`rotate(${rotation}deg)`;
+    spinRAF=requestAnimationFrame(step);
+  };
+  spinRAF=requestAnimationFrame(step);
+}
+function stopFreeSpin(){
+  if(spinRAF) cancelAnimationFrame(spinRAF);
+  spinRAF=null;
+}
+function landOn(idx){
+  const w=document.getElementById('wheel');
+  stopFreeSpin();
+  void w.offsetWidth;   // 현재 각도를 확정한 뒤 감속 애니메이션 시작
+  w.style.transition=`transform ${STOP_MS}ms cubic-bezier(.2,.6,.3,1)`;
+  rotation+=360*4+(360-((rotation+segMid[idx])%360));
+  w.style.transform=`rotate(${rotation}deg)`;
+}
+function easeStop(){
+  /* 오류 시: 자유 회전을 부드럽게 멈춤 */
+  const w=document.getElementById('wheel');
+  stopFreeSpin();
+  void w.offsetWidth;
+  w.style.transition='transform 900ms cubic-bezier(.2,.6,.3,1)';
+  rotation+=200;
+  w.style.transform=`rotate(${rotation}deg)`;
+}
+
 async function spin(){
   if(spinning||remaining<=0) return;
   spinning=true;
   const btn=document.getElementById('spinBtn'), result=document.getElementById('result');
   btn.disabled=true; btn.textContent='추첨 중...';
   result.style.display='none';
+  startFreeSpin();
 
   try{
     const res=await fetch(`${API_URL}?action=spin&insta=${encodeURIComponent(userInsta)}&name=${encodeURIComponent(userNameIn)}`);
     const data=await res.json();
     if(!data.ok){
+      easeStop();
       alert(data.error==='NO_TICKET'?'남은 응모권이 없습니다.'
           : data.error==='EXCLUDED'?'럭키드로우 참여 대상이 아닙니다.'
           : data.error==='BUSY'?'참여자가 많아 잠시 대기 중입니다. 다시 눌러 주세요.'
           : '오류가 발생했습니다. 다시 시도해 주세요.');
       spinning=false; updateRemaining(); return;
     }
-    const idx=pickSegment(data);
-    rotation+=360*5+(360-((rotation+segMid[idx])%360));
-    document.getElementById('wheel').style.transform=`rotate(${rotation}deg)`;
+    landOn(pickSegment(data));
 
     setTimeout(()=>{
       remaining=data.remaining;
@@ -387,8 +425,9 @@ async function spin(){
       applyStock(data.stock);
       spinning=false;
       updateRemaining();
-    },4500);
+    },STOP_MS+100);
   }catch(err){
+    easeStop();
     alert('네트워크 오류가 발생했습니다. 다시 시도해 주세요.');
     spinning=false; updateRemaining();
   }

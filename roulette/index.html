@@ -171,7 +171,7 @@ footer a{color:var(--red-deep);text-decoration:none;font-weight:700;}
     <div class="legend" id="legendBox" style="display:none;">
       <h3>경품 목록</h3>
       <div id="legendList"></div>
-      <div class="lg-foot">번호가 없는 칸은 <b>꽝</b>입니다 · 실물 경품은 1인 1개까지 당첨됩니다</div>
+      <div class="lg-foot">번호가 없는 칸은 <b>꽝</b>입니다 · 실물 경품은 1인 1개 · 쿠폰은 1인 1장까지 당첨됩니다</div>
     </div>
 
     <div class="history" id="history" style="display:none;">
@@ -184,7 +184,7 @@ footer a{color:var(--red-deep);text-decoration:none;font-weight:700;}
 
 <footer>
   경품 당첨자에게는 <b>인스타그램 DM</b>으로<br>
-  사이즈와 배송 정보를 개별 안내드립니다.<br><br>
+  배송 정보(필요 시 사이즈)를 개별 안내드립니다.<br><br>
   문의 · <a href="https://www.instagram.com/xbionic.kr/" target="_blank" rel="noopener">@xbionic.kr</a>
 </footer>
 
@@ -196,6 +196,9 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbws27O8ZohDkt9LLr5ByC_3
 const PRIZE_C = ['#C62828','#A82222'];   // 경품 칸 (번갈아)
 const LOSE_C  = '#F6E9E1';               // 꽝 칸
 const SVGNS   = 'http://www.w3.org/2000/svg';
+
+/* 사이즈 안내가 필요 없는 실물 경품 (이름에 포함된 키워드로 판별) */
+const NO_SIZE_KEYWORDS = ['러닝벨트','벨트'];
 
 let userInsta='', userNameIn='', remaining=0;
 let rotation=0, spinning=false, spinCount=0;
@@ -311,9 +314,15 @@ async function checkUser(){
     const res=await fetch(`${API_URL}?action=check&insta=${encodeURIComponent(insta)}&name=${encodeURIComponent(name)}`);
     const data=await res.json();
     if(!data.ok){
-      loginMsg(data.error==='NOT_FOUND'
-        ? '일치하는 응모권이 없습니다. 기록 제출 때 쓴 인스타 ID와 이름을 그대로 입력했는지 확인해 주세요. (응모권은 30위 이내 또는 기록 2회 이상 인증 시 지급)'
-        : '조회에 실패했습니다. 잠시 후 다시 시도해 주세요.', true);
+      let m;
+      if(data.error==='EXCLUDED'){
+        m='럭키드로우 참여 대상이 아닙니다. 자세한 내용은 @xbionic.kr DM으로 문의해 주세요.';
+      }else if(data.error==='NOT_FOUND'){
+        m='일치하는 응모권이 없습니다. 기록 제출 때 쓴 인스타 ID와 이름을 그대로 입력했는지 확인해 주세요. (응모권은 30위 이내 또는 기록 2회 이상 인증 시 지급)';
+      }else{
+        m='조회에 실패했습니다. 잠시 후 다시 시도해 주세요.';
+      }
+      loginMsg(m,true);
       btn.disabled=false; return;
     }
     userInsta=insta; userNameIn=name; remaining=data.remaining;
@@ -362,6 +371,7 @@ async function spin(){
     const data=await res.json();
     if(!data.ok){
       alert(data.error==='NO_TICKET'?'남은 응모권이 없습니다.'
+          : data.error==='EXCLUDED'?'럭키드로우 참여 대상이 아닙니다.'
           : data.error==='BUSY'?'참여자가 많아 잠시 대기 중입니다. 다시 눌러 주세요.'
           : '오류가 발생했습니다. 다시 시도해 주세요.');
       spinning=false; updateRemaining(); return;
@@ -393,15 +403,22 @@ function pickSegment(data){
   return lose.length?lose[Math.floor(Math.random()*lose.length)]:0;
 }
 
+/* 당첨 안내 문구 — 쿠폰 / 사이즈 불필요 실물 / 사이즈 필요 실물 */
+function winNote(data){
+  if(!data.isReal) return '축하합니다! 쿠폰 사용 방법은 인스타그램 DM으로 안내드립니다.';
+  const noSize=NO_SIZE_KEYWORDS.some(k=>nk(data.item).indexOf(nk(k))>=0);
+  return noSize
+    ? '축하합니다! 배송 정보는 인스타그램 DM으로 개별 안내드립니다.'
+    : '축하합니다! 사이즈와 배송 정보는 인스타그램 DM으로 개별 안내드립니다.';
+}
+
 function showResult(data){
   const box=document.getElementById('result');
   if(data.result==='WIN'){
     box.className='result win';
     document.getElementById('rLabel').textContent='Congratulations';
     document.getElementById('rItem').textContent=data.item;
-    document.getElementById('rNote').textContent=data.isReal
-      ?'축하합니다! 사이즈와 배송 정보는 인스타그램 DM으로 개별 안내드립니다.'
-      :'축하합니다! 쿠폰 사용 방법은 인스타그램 DM으로 안내드립니다.';
+    document.getElementById('rNote').textContent=winNote(data);
   }else{
     box.className='result lose';
     document.getElementById('rLabel').textContent='Result';
